@@ -71,15 +71,20 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)SDL2_ttf\include;$(SolutionDir)SDL2_image\include;$(SolutionDir)SDL2\include;$(SolutionDir)boost;$(SolutionDir)asio;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(SolutionDir)SDL2_ttf\include;$(SolutionDir)SDL2_image\include;$(SolutionDir)SDL2\include;$(SolutionDir)boost;$(SolutionDir)asio;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)SDL2_image\lib\x64;$(SolutionDir)SDL2\lib\x64;$(SolutionDir)SDL2_ttf\lib\x64;$(SolutionDir)boost\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)SDL2_ttf\include;$(SolutionDir)SDL2_image\include;$(SolutionDir)SDL2\include;$(SolutionDir)boost;$(SolutionDir)asio;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(SolutionDir)SDL2_ttf\include;$(SolutionDir)SDL2_image\include;$(SolutionDir)SDL2\include;$(SolutionDir)boost;$(SolutionDir)asio;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -100,12 +105,28 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;ASIO_STANDALONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2test.lib;SDL2_image.lib;SDL2_ttf.lib;libboost_wserialization-vc140-mt-gd-x64-1_66.lib;libboost_serialization-vc140-mt-gd-x64-1_66.lib;libboost_regex-vc140-mt-gd-x64-1_66.lib;libboost_date_time-vc140-mt-gd-x64-1_66.lib;libboost_context-vc140-mt-gd-x64-1_66.lib;libboost_coroutine-vc140-mt-gd-x64-1_66.lib;libboost_system-vc140-mt-gd-x64-1_66.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>@echo copy dll to ouput directory: $(OutDir)
+::xcopy "$(SolutionDir)resource\*" "$(OutDir)" /y /e /i /q
+if $(PlatformTarget)==x64 (
+xcopy "$(SolutionDir)SDL2\lib\x64\*.dll" "$(OutDir)" /y 
+xcopy "$(SolutionDir)SDL2_ttf\lib\x64\*.dll" "$(OutDir)" /y 
+xcopy "$(SolutionDir)SDL2_image\lib\x64\*.dll" "$(OutDir)" /y 
+)
+if $(PlatformTarget)==x86 (
+xcopy "$(SolutionDir)SDL2\lib\x86\*.dll" "$(OutDir)" /y 
+xcopy "$(SolutionDir)SDL2_ttf\lib\x86\*.dll" "$(OutDir)" /y 
+xcopy "$(SolutionDir)SDL2_image\lib\x86\*.dll" "$(OutDir)" /y 
+)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -142,6 +163,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
