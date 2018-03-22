@@ -18,8 +18,11 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9EC57A63-C299-4D11-9C87-054FE8076C7B}</ProjectGuid>
+    <ProjectGuid>{958DD1B7-E616-4344-B471-44D0E54DDE95}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>BiRoad</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
@@ -162,15 +165,6 @@ xcopy "$(SolutionDir)SDL2_image\lib\x86\*.dll" "$(OutDir)" /y
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="asio.cpp" />
-    <ClCompile Include="Source.cpp" />
-    <ClCompile Include="TCP daytime Client.cpp" />
-    <ClCompile Include="tutorial.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="README.md" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
