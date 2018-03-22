@@ -105,7 +105,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;ASIO_STANDALONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;ASIO_STANDALONE;ASIO_HAS_BOOST_BIND;ASIO_HAS_BOOST_DATE_TIME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -163,7 +163,12 @@ xcopy "$(SolutionDir)SDL2_image\lib\x86\*.dll" "$(OutDir)" /y
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="asio.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="tutorial.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
