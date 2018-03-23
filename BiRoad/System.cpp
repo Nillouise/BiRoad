@@ -3,32 +3,50 @@
 #include <map>
 #include "Eatable.h"
 #include <vector>
+#include "Position.h"
 
 namespace {
-	bool collided(std::vector<Object*> &balls,const Snakable *snake)
+	template<typename T>
+	T* getAttr(const Object &obj);
+
+	bool collided(std::vector<const Object*> &balls,const Snakable *snake)
 	{
-		
+		for(auto ball:balls)
+		{
+			if(Position *e = getAttr<Position>(*ball))
+			{
+				for(const auto &s: snake->body)
+				{
+					if(s.x==e->point.x&&s.y==e->point.y)
+					{
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	template<typename T>
 	T* getAttr(const Object &obj)
 	{
-		auto a = obj.attributes.find(typeid(T));
-
+		std::map<type_info, std::shared_ptr<ECS>>::const_iterator a = obj.attributes.find(typeid(T));
 		if(a==end())
 		{
 			return nullptr;
 		}else
 		{
-			return a->second;
+			return a->second.get();
 		}
 	}
 }
 
 void eatable_system(World& world)
 {
-	std::vector<Object*> balls;
-	for (auto obj : world.objs)
+	std::vector<const Object*> balls;
+
+
+	for (const Object &obj : world.objs)
 	{
 		if(Eatable *e = getAttr<Eatable>(obj))
 		{
@@ -36,8 +54,17 @@ void eatable_system(World& world)
 			break;
 		}
 	}
-
-
+	for(auto &a:world.objs)
+	{
+		if(Snakable *s = getAttr<Snakable>(a))
+		{
+			//如果蛇没有碰到球，尾端应该要被删除的
+			if(!collided(balls,s))
+			{
+				s->body.pop_back();
+			}
+		}
+	}
 }
 
 void obstacle_system(World& world)
