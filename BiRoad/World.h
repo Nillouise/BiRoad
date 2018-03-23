@@ -5,5 +5,6 @@
 class World
 {
 public:
-	std::set<Object> objs;
+	std::set< std::shared_ptr<Object>> objs;
+	int current_frame_has_collide = 0;
 };

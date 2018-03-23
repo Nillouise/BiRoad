@@ -9,7 +9,7 @@ namespace {
 	template<typename T>
 	T* getAttr(const Object &obj);
 
-	bool collided(std::vector<const Object*> &balls,const Snakable *snake)
+	bool collided(std::vector<Object*> &balls,const Snakable *snake)
 	{
 		for(auto ball:balls)
 		{
@@ -43,20 +43,18 @@ namespace {
 
 void eatable_system(World& world)
 {
-	std::vector<const Object*> balls;
+	std::vector<Object*> balls;
 
-
-	for (const Object &obj : world.objs)
+	for (auto obj : world.objs)
 	{
-		if(Eatable *e = getAttr<Eatable>(obj))
+		if(Eatable *e = getAttr<Eatable>(*obj))
 		{
-			balls.push_back(&obj);
-			break;
+			balls.push_back(obj.get());
 		}
 	}
 	for(auto &a:world.objs)
 	{
-		if(Snakable *s = getAttr<Snakable>(a))
+		if(Snakable *s = getAttr<Snakable>(*a))
 		{
 			//如果蛇没有碰到球，尾端应该要被删除的
 			if(!collided(balls,s))
@@ -69,7 +67,29 @@ void eatable_system(World& world)
 
 void obstacle_system(World& world)
 {
+	std::vector<Object*> snakes;
 
+	for (auto &obj : world.objs)
+	{
+		if (Snakable *e = getAttr<Snakable>(*obj))
+		{
+			snakes.push_back(obj.get());
+		}
+	}
+	std::map<Point, int> maze;
+	for(auto a:snakes)
+	{
+		Snakable *e1 = getAttr<Snakable>(*a);
+		for(auto &b:e1->body)
+		{
+			int vis = ++maze[b];
+			if(vis>1)
+			{
+				e1->isCollided = true;
+				++world.current_frame_has_collide;
+			}
+		}
+	}
 }
 
 void snakable_system(World& world)
@@ -83,7 +103,7 @@ void snakable_system(World& world)
 	};
 	for(auto obj:world.objs)
 	{
-		if(Snakable* p = getAttr<Snakable>(obj))
+		if(Snakable* p = getAttr<Snakable>(*obj.get()))
 		{
 			Point head = p->body.front();
 			head.x += offset[p->direction.direction].first;
@@ -92,3 +112,4 @@ void snakable_system(World& world)
 		}
 	}
 }
+

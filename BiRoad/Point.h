@@ -20,4 +20,12 @@ public:
 	int x, y;
 	Point(int x = 0,int y = 0):
 		x(0),y(0){}
+	bool operator==(const Point&p)
+	{
+		return x == p.x&&y == p.y;
+	}
+	bool operator<(const Point&p)
+	{
+		return x == p.x ? y < p.y : x < p.x;
+	}
 };
