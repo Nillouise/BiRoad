@@ -27,11 +27,23 @@ namespace {
 		return false;
 	}
 
+	bool outOfWorld(const World &world,const Snakable *snake)
+	{
+		for(auto &a: snake->body)
+		{
+			if(a.x<1||a.x>world.width||a.y<1||a.y>world.height)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	template<typename T>
 	T* getAttr(const Object &obj)
 	{
 		std::map<type_info, std::shared_ptr<ECS>>::const_iterator a = obj.attributes.find(typeid(T));
-		if(a==end())
+		if(a== obj.attributes.end())
 		{
 			return nullptr;
 		}else
@@ -45,7 +57,7 @@ void eatable_system(World& world)
 {
 	std::vector<Object*> balls;
 
-	for (auto obj : world.objs)
+	for (auto &obj : world.objs)
 	{
 		if(Eatable *e = getAttr<Eatable>(*obj))
 		{
@@ -80,16 +92,30 @@ void obstacle_system(World& world)
 	for(auto a:snakes)
 	{
 		Snakable *e1 = getAttr<Snakable>(*a);
+		if (outOfWorld(world, e1))
+		{
+			if (!e1->isCollided)
+			{
+				++world.current_frame_has_collide;
+			}
+			e1->isCollided = true;
+		}
 		for(auto &b:e1->body)
 		{
+
 			int vis = ++maze[b];
 			if(vis>1)
 			{
+				if(!e1->isCollided)
+				{
+					++world.current_frame_has_collide;
+				}
 				e1->isCollided = true;
-				++world.current_frame_has_collide;
 			}
 		}
 	}
+
+
 }
 
 void snakable_system(World& world)
