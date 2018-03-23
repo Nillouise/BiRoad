@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 		asio::io_service io_service;
 
 		tcp::resolver resolver(io_service);
-		tcp::resolver::query query(argv[1], "daytime");
+		tcp::resolver::query query(argv[1], "daytime");//这里的daytime就是用daytime这个服务的端口（因为daytime这个服务是个广为人知的协议，有自己的专门端口）
 		tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
 		tcp::socket socket(io_service);
