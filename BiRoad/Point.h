@@ -17,15 +17,15 @@ public:
 class Point
 {
 public:
-	int x, y;
-	Point(int x = 0,int y = 0):
-		x(0),y(0){}
-	bool operator==(const Point&p)
+	int c, r;
+	Point(int c = 0,int r = 0):
+		c(c),r(r){}
+	bool operator==(const Point&p) const
 	{
-		return x == p.x&&y == p.y;
+		return c == p.c&&r == p.r;
 	}
-	bool operator<(const Point&p)
+	bool operator<(const Point&p) const
 	{
-		return x == p.x ? y < p.y : x < p.x;
+		return c == p.c ? r < p.r : c < p.c;
 	}
 };

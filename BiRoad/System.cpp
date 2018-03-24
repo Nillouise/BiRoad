@@ -8,6 +8,8 @@
 #include <iostream>
 #include <string>
 #include "Constant.h"
+#include "Game.h"
+#include "TextureManager.h"
 
 using std::to_string;
 using std::map;
@@ -56,7 +58,7 @@ namespace {
 			{
 				for(const auto &s: snake->body)
 				{
-					if(s.x==e->point.x&&s.y==e->point.y)
+					if(s.c==e->point.c&&s.r==e->point.r)
 					{
 						return true;
 					}
@@ -70,7 +72,7 @@ namespace {
 	{
 		for(auto &a: snake->body)
 		{
-			if(a.x<1||a.x>world.width||a.y<1||a.y>world.height)
+			if(a.c<1||a.c>world.width||a.r<1||a.r>world.height)
 			{
 				return true;
 			}
@@ -178,13 +180,13 @@ void snakable_system(World& world)
 		{Direction::left,{-1,0}},
 		{Direction::right,{1,0}},
 	};
-	for(auto obj:world.objs)
+	for(auto &obj:world.objs)
 	{
-		if(Snakable* p = getAttr<Snakable>(*obj.get()))
+		if(Snakable* p = getAttr<Snakable>(*obj))
 		{
 			Point head = p->body.front();
-			head.x += offset[p->direction.direction].first;
-			head.y += offset[p->direction.direction].second;
+			head.c += offset[p->direction.direction].first;
+			head.r += offset[p->direction.direction].second;
 			p->body.push_front(head);
 		}
 	}
@@ -236,4 +238,37 @@ void input(World &world,const std::string &keyname)
 		std::cerr << "inpute error" << std::endl;
 	}
 	send_message_mutex.unlock();
+}
+
+
+void render_system(World &world,Game *game)
+{
+	SDL_RenderClear(game->m_pRenderer.get()); // clear the renderer to the draw color
+
+	if(game->m_printHint)
+	{
+		TheTextureManager::Instance()->drawText("press S to start game", 10, 60, game->m_pRenderer, { 255,255,255,100 });
+		TheTextureManager::Instance()->drawText("press Q to quit game", 10, 90, game->m_pRenderer, { 255,255,255,100 });
+	}
+
+	for (auto &obj : world.objs)
+	{
+		if (Snakable* snakable = getAttr<Snakable>(*obj))
+		{
+			for(auto &body:snakable->body)
+			{
+				TheTextureManager::Instance()->draw(TheTextureManager::TextId::self_snake, body.c * 20, body.r * 20, 20, 20, game->m_pRenderer);
+			}
+		}
+
+		if(Eatable* eatable = getAttr<Eatable>(*obj))
+		{
+			if(Position * pos = getAttr<Position>(*obj))
+			{
+				TheTextureManager::Instance()->draw(TheTextureManager::TextId::ball, pos->point.c * 20, pos->point.r * 20, 20, 20, game->m_pRenderer);
+			}
+		}
+	}
+
+	SDL_RenderPresent(game->m_pRenderer.get());
 }
