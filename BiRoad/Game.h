@@ -17,8 +17,11 @@ public:
 	// a function to access the private running variable
 	bool running() const { return m_bRunning; }
 private:
+	Starter starter;
 	int m_selfSnakeColor[3] = { 255,0,0 };
 	int m_ballColor[3] = { 255,255,0 };
+	int m_screenWidth = 0;
+	int m_screenHeight = 0;
 	bool m_printHint = false;
 	bool m_bRunning = false;
 	shared_ptr<SDL_Window> m_pWindow;

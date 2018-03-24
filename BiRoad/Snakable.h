@@ -7,7 +7,8 @@ class Snakable:public ECS
 {
 public:
 	std::deque<Point> body;
-	Direction direction = Direction(Direction::up);
-	Direction next_direction = Direction(Direction::up);
+	int id;//snake 的id最好不是跟objec的id一样吧
+	Direction direction = Direction(Direction::down);
+	Direction next_direction = Direction(Direction::down);
 	bool isCollided;
 };

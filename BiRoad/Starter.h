@@ -10,4 +10,9 @@ public:
 	int width;
 	int height;
 	bool fullScreen;
+	int pxSize;
+
+	int init();
 };
+
+

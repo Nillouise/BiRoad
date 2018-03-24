@@ -2,8 +2,13 @@
 #include<iostream>
 #include "TextureManager.h"
 #include "System.h"
+#include "Snakable.h"
+#include "Obstacle.h"
+#include "Eatable.h"
+#include "Position.h"
 using std::cout;
 using std::shared_ptr;
+using std::make_shared;
 namespace
 {
 
@@ -12,11 +17,16 @@ namespace
 
 bool Game::init(Starter& starter)
 {
+	m_bRunning = true; // everything inited successfully,start the main loop
+	world.height = starter.height / starter.pxSize;
+	world.width = starter.width / starter.pxSize;
+	this->starter = starter;
+
 	if(!initRender(starter))
 	{
 		return false;
 	}
-	m_bRunning = true; // everything inited successfully,start the main loop
+
 	return true;
 }
 
@@ -44,7 +54,28 @@ void Game::handleEvents()
 
 void Game::update()
 {
+	static bool startGame = false;
+	if(!startGame)
+	{
+		startGame = true;
 
+		world.self_id = 0;
+		world.current_frame_numb = 0;
+
+		shared_ptr<Object> snake(new Object());
+		shared_ptr<Snakable> snakable = std::make_shared<Snakable>();
+		snakable->body.push_front(Point(10, 10));
+		snakable->id = 0;
+		snake->attributes[typeid(Snakable)] = snakable;
+		snake->attributes[typeid(Obstacle)] = make_shared<Obstacle>();
+		world.objs.insert(snake);
+
+		shared_ptr<Object> ball(new Object());
+		ball->attributes[typeid(Eatable)] = make_shared<Eatable>();
+		ball->attributes[typeid(Position)] = make_shared<Position>(Point{ 7, 4 });
+		world.objs.insert(ball);
+	}
+	world.current_frame_numb++;
 }
 
 void Game::render()
@@ -89,7 +120,7 @@ bool Game::initRender(Starter& starter)
 				SDL_DestroyRenderer(renderer);
 			}
 			);
-			if (m_pRenderer != 0) // renderer init success
+			if (!m_pRenderer) // renderer init success
 			{
 				std::cout << "renderer creation success\n";
 				SDL_SetRenderDrawColor(m_pRenderer.get(), 100, 255, 255, 255);

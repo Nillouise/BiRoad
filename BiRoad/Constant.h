@@ -11,6 +11,8 @@ namespace Constant
 	const string item_delimiter = "|";
 	const string equal_delimiter = "=";
 	const string user_delimiter = "\n";
+	//stater那个ini file用到的分割器
+	const string starter_delimiter = "=";
 	const string up = "Up";
 	const string down = "Down";
 	const string left = "Left";

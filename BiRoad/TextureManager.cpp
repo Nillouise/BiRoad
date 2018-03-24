@@ -3,6 +3,7 @@
 #include <SDL.h>
 std::shared_ptr<TextureManager> TextureManager::s_pInstance = nullptr;
 
+
 bool TextureManager::load(const std::string &fileName, TextId id, std::shared_ptr<SDL_Renderer> pRenderer)
 {
 	SDL_Surface* pTempSurface = IMG_Load(fileName.c_str());
@@ -27,6 +28,7 @@ bool TextureManager::load(const std::string &fileName, TextId id, std::shared_pt
 	return false;
 }
 
+
 bool TextureManager::loadRect(TextId id, std::shared_ptr<SDL_Renderer> pRenderer, int width, int height, int r, int g, int b)
 {
 	SDL_Surface *pTempSurface = nullptr;
@@ -47,6 +49,7 @@ bool TextureManager::loadRect(TextId id, std::shared_ptr<SDL_Renderer> pRenderer
 	return false;
 }
 
+
 void TextureManager::draw(TextId id, int x, int y, int
 	width, int height, std::shared_ptr<SDL_Renderer> pRenderer,
 	SDL_RendererFlip flip)
@@ -62,6 +65,7 @@ void TextureManager::draw(TextId id, int x, int y, int
 	SDL_RenderCopyEx(pRenderer.get(), m_textureMap[id].get(), &srcRect,
 		&destRect, 0, nullptr, flip);
 }
+
 
 /**
  * FIXME：这里可能不用cache会比较好
@@ -84,8 +88,8 @@ void TextureManager::drawText(const std::string& text, int x, int y, std::shared
 	SDL_Texture* Message = cache[text]; //now you can convert it into a texture
 
 	SDL_Rect Message_rect; //create a rect
-	Message_rect.x = x;  //controls the rect's x coordinate 
-	Message_rect.y = y; // controls the rect's y coordinte
+	Message_rect.x = x;  //controls the rect's c coordinate 
+	Message_rect.y = y; // controls the rect's r coordinte
 	Message_rect.w = text.length() * 16; // controls the width of the rect
 	Message_rect.h = 30; // controls the height of the rect
 
@@ -97,6 +101,7 @@ void TextureManager::drawText(const std::string& text, int x, int y, std::shared
 
 															 //Don't forget too free your surface and texture
 }
+
 
 void TextureManager::drawFrame(TextId id, int x, int y, int
 	width, int height, int currentRow, int currentFrame, 

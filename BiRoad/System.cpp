@@ -10,6 +10,7 @@
 #include "Constant.h"
 #include "Game.h"
 #include "TextureManager.h"
+#include "Tool.h"
 
 using std::to_string;
 using std::map;
@@ -45,30 +46,14 @@ namespace {
 	}
 
 
-	std::vector<std::string> split(const std::string& s, const std::string &delimiter)
-	{
-		std::vector<std::string> res;
-		auto start = 0U;
-		auto end = s.find(delimiter);
-		while (end != std::string::npos)
-		{
-			res.push_back(s.substr(start, end - start));
-			start = end + delimiter.length();
-			end = s.find(delimiter, start);
-		}
-		res.push_back(s.substr(start, end));
-		return res;
-	}
-
-
 	//这里是反序列化一个user内的所有item
 	map<string,string> deserial_item_map(const string &s)
 	{
 		map<string, string> res;
-		auto items = split(s, Constant::item_delimiter);
-		for(auto item:items)
+		auto items = Tool::split(s, Constant::item_delimiter);
+		for(auto &item:items)
 		{
-			auto keyval = split(item, Constant::equal_delimiter);
+			auto keyval = Tool::split(item, Constant::equal_delimiter);
 			if(keyval.size()==2)
 			{
 				res[keyval[0]] = keyval[1];
@@ -143,7 +128,7 @@ namespace {
 		{
 			if(Snakable *s = getAttr<Snakable>(*a))
 			{
-				if(a->id==world.self_id)
+				if(s->id==world.self_id)
 				{
 					return a;
 				}
@@ -305,7 +290,9 @@ void render_system(World &world,Game *game)
 		{
 			for(auto &body:snakable->body)
 			{
-				TheTextureManager::Instance()->draw(TheTextureManager::TextId::self_snake, body.c * 20, body.r * 20, 20, 20, game->m_pRenderer);
+				TheTextureManager::Instance()->draw(TheTextureManager::TextId::self_snake, 
+					(body.c - 1) * game->starter.width, (body.r - 1) * game->starter.height, 
+					game->starter.pxSize, game->starter.pxSize, game->m_pRenderer);
 			}
 		}
 
@@ -333,7 +320,7 @@ void network_system(World& world)
 
 		if(kv[Constant::self_id] == to_string(world.self_id))
 		{
-			if(auto p =  get_self_snake(world))
+			if(auto &p =  get_self_snake(world))
 			{
 				if(auto snake = getAttr<Snakable>(*p) )
 				{

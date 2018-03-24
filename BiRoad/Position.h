@@ -7,4 +7,5 @@ class Position:public ECS
 {
 public:
 	Point point;
+	Position(Point p):point(p){}
 };
