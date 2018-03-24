@@ -66,13 +66,13 @@ void Game::update()
 		shared_ptr<Snakable> snakable = std::make_shared<Snakable>();
 		snakable->body.push_front(Point(10, 10));
 		snakable->id = 0;
-		snake->attributes[typeid(Snakable)] = snakable;
-		snake->attributes[typeid(Obstacle)] = make_shared<Obstacle>();
+		snake->attributes[typeid(Snakable).name()] = snakable;
+		snake->attributes[typeid(Obstacle).name()] = make_shared<Obstacle>();
 		world.objs.insert(snake);
 
 		shared_ptr<Object> ball = make_shared<Object>();
-		ball->attributes[typeid(Eatable)] = make_shared<Eatable>();
-		ball->attributes[typeid(Position)] = make_shared<Position>(Point{ 7, 4 });
+		ball->attributes[typeid(Eatable).name()] = make_shared<Eatable>();
+		ball->attributes[typeid(Position).name()] = make_shared<Position>(Point{ 7, 4 });
 		world.objs.insert(ball);
 	}
 

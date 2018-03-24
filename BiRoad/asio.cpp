@@ -50,7 +50,7 @@ private:
 	asio::deadline_timer timer2;
 };
 
-int local_main()
+static int local_main()
 {
 	asio::io_service io;
 	Printer p(io);

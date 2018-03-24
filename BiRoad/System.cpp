@@ -111,13 +111,13 @@ namespace {
 	template<typename T>
 	T* getAttr(const Object &obj)
 	{
-		std::map<type_info, std::shared_ptr<ECS>>::const_iterator a = obj.attributes.find(typeid(T));
-		if(a== obj.attributes.end())
+		std::map<string, std::shared_ptr<ECS>>::const_iterator a = obj.attributes.find(typeid(T).name());
+		if(a == obj.attributes.end())
 		{
 			return nullptr;
 		}else
 		{
-			return a->second.get();
+			return dynamic_cast<T*>(a->second.get());
 		}
 	}
 

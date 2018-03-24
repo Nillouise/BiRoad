@@ -52,7 +52,7 @@ private:
 	int count_;
 };
 
-int local_main()
+static int local_main()
 {
 	asio::io_service io;
 	printer p(io);
