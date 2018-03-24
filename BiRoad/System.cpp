@@ -189,8 +189,7 @@ void obstacle_system(World& world)
 		}
 		for(auto &b:e1->body)
 		{
-			int vis = ++maze[b];
-			if(vis>1)
+			if(++maze[b]>1)
 			{
 				if(!e1->isCollided)
 				{

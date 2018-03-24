@@ -62,7 +62,7 @@ void Game::update()
 		world.self_id = 0;
 		world.current_frame_numb = 0;
 
-		shared_ptr<Object> snake(new Object());
+		shared_ptr<Object> snake = make_shared<Object>();
 		shared_ptr<Snakable> snakable = std::make_shared<Snakable>();
 		snakable->body.push_front(Point(10, 10));
 		snakable->id = 0;
@@ -70,11 +70,19 @@ void Game::update()
 		snake->attributes[typeid(Obstacle)] = make_shared<Obstacle>();
 		world.objs.insert(snake);
 
-		shared_ptr<Object> ball(new Object());
+		shared_ptr<Object> ball = make_shared<Object>();
 		ball->attributes[typeid(Eatable)] = make_shared<Eatable>();
 		ball->attributes[typeid(Position)] = make_shared<Position>(Point{ 7, 4 });
 		world.objs.insert(ball);
 	}
+
+	network_system(world);
+	snakable_system(world);
+	eatable_system(world);
+	obstacle_system(world);
+	death_system(world);
+	
+
 	world.current_frame_numb++;
 }
 
