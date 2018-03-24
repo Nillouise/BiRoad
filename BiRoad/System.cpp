@@ -216,8 +216,9 @@ void snakable_system(World& world)
 		if(Snakable* p = getAttr<Snakable>(*obj))
 		{
 			Point head = p->body.front();
-			head.c += offset[p->direction.direction].first;
-			head.r += offset[p->direction.direction].second;
+			head.c += offset[p->next_direction].first;
+			head.r += offset[p->next_direction].second;
+			p->direction = p->next_direction;
 			p->body.push_front(head);
 		}
 	}
@@ -300,8 +301,8 @@ void render_system(World &world,Game *game)
 			if(Position * pos = getAttr<Position>(*obj))
 			{
 				TheTextureManager::Instance()->draw(TheTextureManager::TextId::ball, 
-					pos->point.c * game->starter.pxSize, 
-					pos->point.r * game->starter.pxSize, 
+					(pos->point.c-1) * game->starter.pxSize, 
+					(pos->point.r-1) * game->starter.pxSize, 
 					game->starter.pxSize, 
 					game->starter.pxSize, 
 					game->m_pRenderer);
