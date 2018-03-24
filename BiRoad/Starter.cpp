@@ -28,7 +28,7 @@ int Starter::init()
 		ypos = 100;
 		width = 500;
 		height = 500;
-		fullScreen = true;
+		fullScreen = false;
 		pxSize = 5;
 	}
 	catch (...)

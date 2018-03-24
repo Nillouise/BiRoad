@@ -6,6 +6,7 @@
 #include "Obstacle.h"
 #include "Eatable.h"
 #include "Position.h"
+#include <boost/date_time/microsec_time_clock.hpp>
 using std::cout;
 using std::shared_ptr;
 using std::make_shared;
@@ -55,6 +56,7 @@ void Game::handleEvents()
 void Game::update()
 {
 	static bool startGame = false;
+	
 	if(!startGame)
 	{
 		startGame = true;
@@ -76,12 +78,16 @@ void Game::update()
 		world.objs.insert(ball);
 	}
 
-	network_system(world);
-	snakable_system(world);
-	eatable_system(world);
-	obstacle_system(world);
-	death_system(world);
-	
+	static long long preUpdateTime = 0;
+	if(GetTickCount()/700 != preUpdateTime/700)
+	{
+		preUpdateTime = GetTickCount();
+		network_system(world);
+		snakable_system(world);
+		eatable_system(world);
+		obstacle_system(world);
+		death_system(world);
+	}
 
 	world.current_frame_numb++;
 }
@@ -118,7 +124,7 @@ bool Game::initRender(Starter& starter)
 			SDL_DestroyWindow(window);
 		}
 		);
-		if (!m_pWindow) // window init success
+		if (m_pWindow) // window init success
 		{
 			std::cout << "window creation success\n";
 			m_pRenderer = shared_ptr<SDL_Renderer>(
@@ -128,7 +134,7 @@ bool Game::initRender(Starter& starter)
 				SDL_DestroyRenderer(renderer);
 			}
 			);
-			if (!m_pRenderer) // renderer init success
+			if (m_pRenderer) // renderer init success
 			{
 				std::cout << "renderer creation success\n";
 				SDL_SetRenderDrawColor(m_pRenderer.get(), 100, 255, 255, 255);
@@ -152,7 +158,7 @@ bool Game::initRender(Starter& starter)
 	}
 	std::cout << "init success\n";
 	//init the resource
-	if (!TheTextureManager::Instance()->load("assets/animate-alpha.png", TheTextureManager::TextId::animate, m_pRenderer))
+	if (!TheTextureManager::Instance()->load("resource/assets/animate-alpha.png", TheTextureManager::TextId::animate, m_pRenderer))
 	{
 		std::cout << "load assets folder error";
 		return false;

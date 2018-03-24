@@ -290,7 +290,7 @@ void render_system(World &world,Game *game)
 			for(auto &body:snakable->body)
 			{
 				TheTextureManager::Instance()->draw(TheTextureManager::TextId::self_snake, 
-					(body.c - 1) * game->starter.width, (body.r - 1) * game->starter.height, 
+					(body.c - 1) * game->starter.pxSize, (body.r - 1) * game->starter.pxSize, 
 					game->starter.pxSize, game->starter.pxSize, game->m_pRenderer);
 			}
 		}
@@ -299,7 +299,12 @@ void render_system(World &world,Game *game)
 		{
 			if(Position * pos = getAttr<Position>(*obj))
 			{
-				TheTextureManager::Instance()->draw(TheTextureManager::TextId::ball, pos->point.c * 20, pos->point.r * 20, 20, 20, game->m_pRenderer);
+				TheTextureManager::Instance()->draw(TheTextureManager::TextId::ball, 
+					pos->point.c * game->starter.pxSize, 
+					pos->point.r * game->starter.pxSize, 
+					game->starter.pxSize, 
+					game->starter.pxSize, 
+					game->m_pRenderer);
 			}
 		}
 	}

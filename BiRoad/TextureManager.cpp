@@ -7,7 +7,7 @@ std::shared_ptr<TextureManager> TextureManager::s_pInstance = nullptr;
 bool TextureManager::load(const std::string &fileName, TextId id, std::shared_ptr<SDL_Renderer> pRenderer)
 {
 	SDL_Surface* pTempSurface = IMG_Load(fileName.c_str());
-	if (pTempSurface == 0)
+	if (pTempSurface == nullptr)
 	{
 		return false;
 	}
