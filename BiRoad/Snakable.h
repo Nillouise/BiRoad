@@ -8,5 +8,6 @@ class Snakable:public ECS
 public:
 	std::deque<Point> body;
 	Direction direction = Direction(Direction::up);
+	Direction next_direction = Direction(Direction::up);
 	bool isCollided;
 };

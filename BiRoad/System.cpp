@@ -4,8 +4,47 @@
 #include "Eatable.h"
 #include <vector>
 #include "Position.h"
+#include <mutex>
+#include <iostream>
+#include <string>
+#include "Constant.h"
+
+using std::to_string;
+using std::map;
 
 namespace {
+	std::string receive_message_buffer;
+	std::mutex receiver_message_mutex;
+	std::string send_message_buffer;
+	std::mutex send_message_mutex;
+
+	std::map<std::string, Direction::direction_enum> convertor{ { Constant::up,Direction::up },
+		{ Constant::right,Direction::right },{ Constant::down,Direction::down },{ Constant::left,Direction::left } 
+	};
+
+	string serial_map(const map<string,string> &keyval)
+	{
+		string res;
+		int i = 0;
+		for(auto a:keyval)
+		{
+			if(i!=0)
+			{
+				res += Constant::delimiter;
+			}
+			i++;
+			res += a.first + Constant::equal + a.second;
+		}
+		return res;
+	}
+
+	bool isConverseDirect(const Direction::direction_enum &e1,const Direction::direction_enum &e2)
+	{
+		return (e1 == Direction::down && e2 == Direction::up)
+			|| (e1 == Direction::up && e2 == Direction::down)
+			|| (e1 == Direction::left && e2 == Direction::right)
+			|| (e1 == Direction::right && e2 == Direction::left);
+	}
 	template<typename T>
 	T* getAttr(const Object &obj);
 
@@ -50,6 +89,21 @@ namespace {
 		{
 			return a->second.get();
 		}
+	}
+
+	std::shared_ptr<Object> get_self_snake(World &world)
+	{
+		for(auto a:world.objs)
+		{
+			if(Snakable *s = getAttr<Snakable>(*a))
+			{
+				if(a->id==world.self_id)
+				{
+					return a;
+				}
+			}
+		}
+		return nullptr;
 	}
 }
 
@@ -102,7 +156,6 @@ void obstacle_system(World& world)
 		}
 		for(auto &b:e1->body)
 		{
-
 			int vis = ++maze[b];
 			if(vis>1)
 			{
@@ -114,8 +167,6 @@ void obstacle_system(World& world)
 			}
 		}
 	}
-
-
 }
 
 void snakable_system(World& world)
@@ -139,3 +190,50 @@ void snakable_system(World& world)
 	}
 }
 
+
+void death_system(World &world)
+{
+	for(auto a = world.objs.begin();a != world.objs.end();)
+	{
+		if (Snakable *e = getAttr<Snakable>(**a))
+		{
+			if (e->isCollided)
+			{
+				a = world.objs.erase(a);
+			}else
+			{
+				++a;
+			}
+		}else
+		{
+			++a;
+		}
+	}
+}
+
+void input(World &world,const std::string &keyname)
+{
+	send_message_mutex.lock();
+	try
+	{
+		auto dire = convertor[keyname];
+		if(auto obj = get_self_snake(world))
+		{
+			if(Snakable *snake = getAttr<Snakable>(*obj))
+			{
+				if(!isConverseDirect(snake->direction.direction,dire))
+				{
+					map<string, string> keyval;
+					keyval[Constant::current_frame_numb] = to_string(world.current_frame_numb);
+					keyval[Constant::press_key] = keyname;
+					keyval[Constant::self_id] = to_string(world.self_id);
+					send_message_buffer = serial_map(keyval);
+				}
+			}
+		}
+	}catch(...)
+	{
+		std::cerr << "inpute error" << std::endl;
+	}
+	send_message_mutex.unlock();
+}
