@@ -49,45 +49,7 @@ void Game::update()
 
 void Game::render()
 {
-	SDL_RenderClear(m_pRenderer.get()); // clear the renderer to the draw color
-								  //暂停时，绘制相应的信息
-
-	for(auto &obj :world.objs)
-	{
-		obj
-	}
-
-
-	if (g_starter->is_set_my_computer_to_server())
-	{
-		if (m_pauseTime > 0)
-		{
-			TheTextureManager::Instance()->drawText("press S to start game", 10, 60, m_pRenderer, { 255,255,255,100 });
-			TheTextureManager::Instance()->drawText("press Q to quit game", 10, 90, m_pRenderer, { 255,255,255,100 });
-		}
-	}
-	else
-	{
-		if (m_pauseTime > 0)
-		{
-			TheTextureManager::Instance()->drawText("wait for server to start game", 5, 5, m_pRenderer);
-		}
-	}
-	//绘制ball
-	for (auto a : m_interact->m_maze->balls)
-	{
-		TheTextureManager::Instance()->draw("ball", a.c * 20, a.r * 20, 20, 20, m_pRenderer);
-	}
-	//绘制snake
-	for (auto a : m_interact->m_snakeMap)
-	{
-		auto b = a.second;
-		for (auto a : b->body)
-		{
-			TheTextureManager::Instance()->draw("snakeUnit", a.c * 20, a.r * 20, 20, 20, m_pRenderer);
-		}
-	}
-	SDL_RenderPresent(m_pRenderer.get()); // draw to the screen
+	render_system(world, this);
 }
 
 void Game::clean()

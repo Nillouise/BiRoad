@@ -13,6 +13,8 @@
 
 using std::to_string;
 using std::map;
+using std::cout;
+using std::endl;
 
 namespace {
 	std::string receive_message_buffer;
@@ -20,9 +22,11 @@ namespace {
 	std::string send_message_buffer;
 	std::mutex send_message_mutex;
 
+
 	std::map<std::string, Direction::direction_enum> convertor{ { Constant::up,Direction::up },
 		{ Constant::right,Direction::right },{ Constant::down,Direction::down },{ Constant::left,Direction::left } 
 	};
+
 
 	string serial_map(const map<string,string> &keyval)
 	{
@@ -32,13 +36,47 @@ namespace {
 		{
 			if(i!=0)
 			{
-				res += Constant::delimiter;
+				res += Constant::item_delimiter;
 			}
 			i++;
-			res += a.first + Constant::equal + a.second;
+			res += a.first + Constant::equal_delimiter + a.second;
 		}
 		return res;
 	}
+
+
+	std::vector<std::string> split(const std::string& s, const std::string &delimiter)
+	{
+		std::vector<std::string> res;
+		auto start = 0U;
+		auto end = s.find(delimiter);
+		while (end != std::string::npos)
+		{
+			res.push_back(s.substr(start, end - start));
+			start = end + delimiter.length();
+			end = s.find(delimiter, start);
+		}
+		res.push_back(s.substr(start, end));
+		return res;
+	}
+
+
+	//这里是反序列化一个user内的所有item
+	map<string,string> deserial_item_map(const string &s)
+	{
+		map<string, string> res;
+		auto items = split(s, Constant::item_delimiter);
+		for(auto item:items)
+		{
+			auto keyval = split(item, Constant::equal_delimiter);
+			if(keyval.size()==2)
+			{
+				res[keyval[0]] = keyval[1];
+			}
+		}
+		return res;
+	}
+
 
 	bool isConverseDirect(const Direction::direction_enum &e1,const Direction::direction_enum &e2)
 	{
@@ -47,8 +85,11 @@ namespace {
 			|| (e1 == Direction::left && e2 == Direction::right)
 			|| (e1 == Direction::right && e2 == Direction::left);
 	}
+
+
 	template<typename T>
 	T* getAttr(const Object &obj);
+
 
 	bool collided(std::vector<Object*> &balls,const Snakable *snake)
 	{
@@ -68,6 +109,7 @@ namespace {
 		return false;
 	}
 
+
 	bool outOfWorld(const World &world,const Snakable *snake)
 	{
 		for(auto &a: snake->body)
@@ -79,6 +121,7 @@ namespace {
 		}
 		return false;
 	}
+
 
 	template<typename T>
 	T* getAttr(const Object &obj)
@@ -92,6 +135,7 @@ namespace {
 			return a->second.get();
 		}
 	}
+
 
 	std::shared_ptr<Object> get_self_snake(World &world)
 	{
@@ -108,6 +152,7 @@ namespace {
 		return nullptr;
 	}
 }
+
 
 void eatable_system(World& world)
 {
@@ -132,6 +177,7 @@ void eatable_system(World& world)
 		}
 	}
 }
+
 
 void obstacle_system(World& world)
 {
@@ -170,6 +216,7 @@ void obstacle_system(World& world)
 		}
 	}
 }
+
 
 void snakable_system(World& world)
 {
@@ -212,6 +259,7 @@ void death_system(World &world)
 		}
 	}
 }
+
 
 void input(World &world,const std::string &keyname)
 {
@@ -271,4 +319,35 @@ void render_system(World &world,Game *game)
 	}
 
 	SDL_RenderPresent(game->m_pRenderer.get());
+}
+
+
+void network_system(World& world)
+{
+	send_message_mutex.lock();
+	try
+	{
+		string tmp = send_message_buffer;
+		send_message_buffer = "";
+		map<string, string> kv = deserial_item_map(tmp);
+
+		if(kv[Constant::self_id] == to_string(world.self_id))
+		{
+			if(auto p =  get_self_snake(world))
+			{
+				if(auto snake = getAttr<Snakable>(*p) )
+				{
+					auto next_direction = convertor[kv[Constant::press_key]];
+					if(!isConverseDirect(next_direction, snake->direction))
+					{
+						snake->next_direction = next_direction;
+					}
+				}
+			}
+		}
+	}catch(...)
+	{
+		cout << "network system error" << endl;
+	}
+	send_message_mutex.unlock();
 }

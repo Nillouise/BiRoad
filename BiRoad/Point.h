@@ -12,6 +12,10 @@ public:
 		this->direction = direction;
 	}
 	direction_enum direction;
+	operator direction_enum ()const
+	{
+		return direction;
+	}
 };
 
 class Point
