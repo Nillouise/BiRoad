@@ -10,5 +10,6 @@ public:
 	int id;//snake 的id最好不是跟objec的id一样吧
 	Direction direction = Direction(Direction::down);
 	Direction next_direction = Direction(Direction::down);
-	bool isCollided;
+	bool isCollided = false;
+	Snakable(int id=0):id(id){}
 };

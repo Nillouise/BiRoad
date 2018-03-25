@@ -3,5 +3,6 @@
 
 class Eatable:public ECS
 {
-	
+public:
+	bool isEated = false;
 };

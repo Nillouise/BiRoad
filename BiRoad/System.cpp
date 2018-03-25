@@ -72,15 +72,13 @@ namespace {
 	}
 
 
-	template<typename T>
-	T* getAttr(const Object &obj);
 
 
 	bool collided(std::vector<Object*> &balls,const Snakable *snake)
 	{
 		for(auto ball:balls)
 		{
-			if(Position *e = getAttr<Position>(*ball))
+			if(Position *e = Tool::getAttr<Position>(*ball))
 			{
 				for(const auto &s: snake->body)
 				{
@@ -108,25 +106,13 @@ namespace {
 	}
 
 
-	template<typename T>
-	T* getAttr(const Object &obj)
-	{
-		std::map<string, std::shared_ptr<ECS>>::const_iterator a = obj.attributes.find(typeid(T).name());
-		if(a == obj.attributes.end())
-		{
-			return nullptr;
-		}else
-		{
-			return dynamic_cast<T*>(a->second.get());
-		}
-	}
 
 
 	std::shared_ptr<Object> get_self_snake(World &world)
 	{
 		for(auto a:world.objs)
 		{
-			if(Snakable *s = getAttr<Snakable>(*a))
+			if(Snakable *s = Tool::getAttr<Snakable>(*a))
 			{
 				if(s->id==world.self_id)
 				{
@@ -145,17 +131,37 @@ void eatable_system(World& world)
 
 	for (auto &obj : world.objs)
 	{
-		if(Eatable *e = getAttr<Eatable>(*obj))
+		if(Eatable *e = Tool::getAttr<Eatable>(*obj))
 		{
 			balls.push_back(obj.get());
 		}
 	}
 	for(auto &a:world.objs)
 	{
-		if(Snakable *s = getAttr<Snakable>(*a))
+		if(Snakable *s = Tool::getAttr<Snakable>(*a))
 		{
 			//如果蛇没有碰到球，尾端应该要被删除的
-			if(!collided(balls,s))
+			bool isCollided = false;
+			for (auto ball : balls)
+			{
+				if (Position *e = Tool::getAttr<Position>(*ball))
+				{
+					for (const auto &u : s->body)
+					{
+						if (u.c == e->point.c&&u.r == e->point.r)
+						{
+							if(Eatable *b = Tool::getAttr<Eatable>(*ball))
+							{
+								b->isEated = true;
+							}
+							isCollided = true;
+							break;
+						}
+					}
+				}
+
+			}
+			if(!isCollided)
 			{
 				s->body.pop_back();
 			}
@@ -170,7 +176,7 @@ void obstacle_system(World& world)
 
 	for (auto &obj : world.objs)
 	{
-		if (Snakable *e = getAttr<Snakable>(*obj))
+		if (Snakable *e = Tool::getAttr<Snakable>(*obj))
 		{
 			snakes.push_back(obj.get());
 		}
@@ -178,7 +184,7 @@ void obstacle_system(World& world)
 	std::map<Point, int> maze;
 	for(auto a:snakes)
 	{
-		Snakable *e1 = getAttr<Snakable>(*a);
+		Snakable *e1 = Tool::getAttr<Snakable>(*a);
 		if (outOfWorld(world, e1))
 		{
 			if (!e1->isCollided)
@@ -213,7 +219,7 @@ void snakable_system(World& world)
 	};
 	for(auto &obj:world.objs)
 	{
-		if(Snakable* p = getAttr<Snakable>(*obj))
+		if(Snakable* p = Tool::getAttr<Snakable>(*obj))
 		{
 			Point head = p->body.front();
 			head.c += offset[p->next_direction].first;
@@ -227,9 +233,10 @@ void snakable_system(World& world)
 
 void death_system(World &world)
 {
+	//蛇与蛇自己的碰撞
 	for(auto a = world.objs.begin();a != world.objs.end();)
 	{
-		if (Snakable *e = getAttr<Snakable>(**a))
+		if (Snakable *e = Tool::getAttr<Snakable>(**a))
 		{
 			if (e->isCollided)
 			{
@@ -243,6 +250,35 @@ void death_system(World &world)
 			++a;
 		}
 	}
+	//ball被蛇碰到
+	int disappearball = 0;
+	for(auto a = world.objs.begin();a != world.objs.end();)
+	{
+		if(Eatable *e = Tool::getAttr<Eatable>(**a))
+		{
+			if(e->isEated)
+			{
+				a = world.objs.erase(a);
+				disappearball++;
+			}else
+			{
+				++a;
+			}
+		}else
+		{
+			++a;
+		}
+	}
+	for(int i=0;i<disappearball;i++)
+	{
+		Point p;
+		do
+		{
+			p = Tool::getRandomBall(world.height, world.width);
+		} while (Tool::newBallConflictWithWorld(world, p));
+		auto a = Object::factoryBall(p);
+		world.objs.insert(a);
+	}
 }
 
 
@@ -254,7 +290,7 @@ void input(World &world,const std::string &keyname)
 		auto dire = convertor[keyname];
 		if(auto obj = get_self_snake(world))
 		{
-			if(Snakable *snake = getAttr<Snakable>(*obj))
+			if(Snakable *snake = Tool::getAttr<Snakable>(*obj))
 			{
 				if(!isConverseDirect(snake->direction.direction,dire))
 				{
@@ -286,7 +322,7 @@ void render_system(World &world,Game *game)
 
 	for (auto &obj : world.objs)
 	{
-		if (Snakable* snakable = getAttr<Snakable>(*obj))
+		if (Snakable* snakable = Tool::getAttr<Snakable>(*obj))
 		{
 			for(auto &body:snakable->body)
 			{
@@ -296,9 +332,9 @@ void render_system(World &world,Game *game)
 			}
 		}
 
-		if(Eatable* eatable = getAttr<Eatable>(*obj))
+		if(Eatable* eatable = Tool::getAttr<Eatable>(*obj))
 		{
-			if(Position * pos = getAttr<Position>(*obj))
+			if(Position * pos = Tool::getAttr<Position>(*obj))
 			{
 				TheTextureManager::Instance()->draw(TheTextureManager::TextId::ball, 
 					(pos->point.c-1) * game->starter.pxSize, 
@@ -327,7 +363,7 @@ void network_system(World& world)
 		{
 			if(auto &p =  get_self_snake(world))
 			{
-				if(auto snake = getAttr<Snakable>(*p) )
+				if(auto snake = Tool::getAttr<Snakable>(*p) )
 				{
 					auto next_direction = convertor[kv[Constant::press_key]];
 					if(!isConverseDirect(next_direction, snake->direction))

@@ -29,7 +29,7 @@ int Starter::init()
 		width = 500;
 		height = 500;
 		fullScreen = false;
-		pxSize = 5;
+		pxSize = 20;
 	}
 	catch (...)
 	{
