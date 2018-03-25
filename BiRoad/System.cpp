@@ -11,11 +11,15 @@
 #include "Game.h"
 #include "TextureManager.h"
 #include "Tool.h"
+#include <queue>
+#include<array>
+
 
 using std::to_string;
 using std::map;
 using std::cout;
 using std::endl;
+using std::vector;
 
 namespace {
 	std::string receive_message_buffer;
@@ -24,18 +28,23 @@ namespace {
 	std::mutex send_message_mutex;
 
 
-	std::map<std::string, Direction::direction_enum> convertor{ { Constant::up,Direction::up },
-		{ Constant::right,Direction::right },{ Constant::down,Direction::down },{ Constant::left,Direction::left } 
+	std::map<std::string, Direction::direction_enum> convertor{ 
+		{ Constant::up,Direction::up }, { Constant::right,Direction::right },
+		{ Constant::down,Direction::down },{ Constant::left,Direction::left }
 	};
 
+	std::map<Direction::direction_enum,std::string> convertor2{
+		{ Direction::up,Constant::up },{ Direction::right,Constant::right},
+		{ Direction::down,Constant::down},{ Direction::left,Constant::left}
+	};
 
-	string serial_map(const map<string,string> &keyval)
+	string serial_map(const map<string, string> &keyval)
 	{
 		string res;
 		int i = 0;
-		for(auto a:keyval)
+		for (auto a : keyval)
 		{
-			if(i!=0)
+			if (i != 0)
 			{
 				res += Constant::item_delimiter;
 			}
@@ -47,14 +56,14 @@ namespace {
 
 
 	//这里是反序列化一个user内的所有item
-	map<string,string> deserial_item_map(const string &s)
+	map<string, string> deserial_item_map(const string &s)
 	{
 		map<string, string> res;
 		auto items = Tool::split(s, Constant::item_delimiter);
-		for(auto &item:items)
+		for (auto &item : items)
 		{
 			auto keyval = Tool::split(item, Constant::equal_delimiter);
-			if(keyval.size()==2)
+			if (keyval.size() == 2)
 			{
 				res[keyval[0]] = keyval[1];
 			}
@@ -63,26 +72,15 @@ namespace {
 	}
 
 
-	bool isConverseDirect(const Direction::direction_enum &e1,const Direction::direction_enum &e2)
+	bool collided(std::vector<Object*> &balls, const Snakable *snake)
 	{
-		return (e1 == Direction::down && e2 == Direction::up)
-			|| (e1 == Direction::up && e2 == Direction::down)
-			|| (e1 == Direction::left && e2 == Direction::right)
-			|| (e1 == Direction::right && e2 == Direction::left);
-	}
-
-
-
-
-	bool collided(std::vector<Object*> &balls,const Snakable *snake)
-	{
-		for(auto ball:balls)
+		for (auto ball : balls)
 		{
-			if(Position *e = Tool::getAttr<Position>(*ball))
+			if (Position *e = Tool::getAttr<Position>(*ball))
 			{
-				for(const auto &s: snake->body)
+				for (const auto &s : snake->body)
 				{
-					if(s.c==e->point.c&&s.r==e->point.r)
+					if (s.c == e->point.c&&s.r == e->point.r)
 					{
 						return true;
 					}
@@ -93,34 +91,16 @@ namespace {
 	}
 
 
-	bool outOfWorld(const World &world,const Snakable *snake)
+	bool outOfWorld(const World &world, const Snakable *snake)
 	{
-		for(auto &a: snake->body)
+		for (auto &a : snake->body)
 		{
-			if(a.c<1||a.c>world.width||a.r<1||a.r>world.height)
+			if (a.c<1 || a.c>world.width || a.r<1 || a.r>world.height)
 			{
 				return true;
 			}
 		}
 		return false;
-	}
-
-
-
-
-	std::shared_ptr<Object> get_self_snake(World &world)
-	{
-		for(auto a:world.objs)
-		{
-			if(Snakable *s = Tool::getAttr<Snakable>(*a))
-			{
-				if(s->id==world.self_id)
-				{
-					return a;
-				}
-			}
-		}
-		return nullptr;
 	}
 }
 
@@ -131,14 +111,14 @@ void eatable_system(World& world)
 
 	for (auto &obj : world.objs)
 	{
-		if(Eatable *e = Tool::getAttr<Eatable>(*obj))
+		if (Eatable *e = Tool::getAttr<Eatable>(*obj))
 		{
 			balls.push_back(obj.get());
 		}
 	}
-	for(auto &a:world.objs)
+	for (auto &a : world.objs)
 	{
-		if(Snakable *s = Tool::getAttr<Snakable>(*a))
+		if (Snakable *s = Tool::getAttr<Snakable>(*a))
 		{
 			//如果蛇没有碰到球，尾端应该要被删除的
 			bool isCollided = false;
@@ -150,7 +130,7 @@ void eatable_system(World& world)
 					{
 						if (u.c == e->point.c&&u.r == e->point.r)
 						{
-							if(Eatable *b = Tool::getAttr<Eatable>(*ball))
+							if (Eatable *b = Tool::getAttr<Eatable>(*ball))
 							{
 								b->isEated = true;
 							}
@@ -161,7 +141,7 @@ void eatable_system(World& world)
 				}
 
 			}
-			if(!isCollided)
+			if (!isCollided)
 			{
 				s->body.pop_back();
 			}
@@ -182,7 +162,7 @@ void obstacle_system(World& world)
 		}
 	}
 	std::map<Point, int> maze;
-	for(auto a:snakes)
+	for (auto a : snakes)
 	{
 		Snakable *e1 = Tool::getAttr<Snakable>(*a);
 		if (outOfWorld(world, e1))
@@ -193,11 +173,11 @@ void obstacle_system(World& world)
 			}
 			e1->isCollided = true;
 		}
-		for(auto &b:e1->body)
+		for (auto &b : e1->body)
 		{
-			if(++maze[b]>1)
+			if (++maze[b] > 1)
 			{
-				if(!e1->isCollided)
+				if (!e1->isCollided)
 				{
 					++world.current_frame_has_collide;
 				}
@@ -210,20 +190,18 @@ void obstacle_system(World& world)
 
 void snakable_system(World& world)
 {
-	static std::map<Direction::direction_enum, std::pair<int,int>> offset = 
+	static std::map<Direction::direction_enum, std::pair<int, int>> offset =
 	{
 		{Direction::up,{0,-1}},
 		{Direction::down,{0,1}},
 		{Direction::left,{-1,0}},
 		{Direction::right,{1,0}},
 	};
-	for(auto &obj:world.objs)
+	for (auto &obj : world.objs)
 	{
-		if(Snakable* p = Tool::getAttr<Snakable>(*obj))
+		if (Snakable* p = Tool::getAttr<Snakable>(*obj))
 		{
-			Point head = p->body.front();
-			head.c += offset[p->next_direction].first;
-			head.r += offset[p->next_direction].second;
+			Point head = Tool::nextDirectPoint(p->next_direction, p->body.front());
 			p->direction = p->next_direction;
 			p->body.push_front(head);
 		}
@@ -234,42 +212,46 @@ void snakable_system(World& world)
 void death_system(World &world)
 {
 	//蛇与蛇自己的碰撞
-	for(auto a = world.objs.begin();a != world.objs.end();)
+	for (auto a = world.objs.begin(); a != world.objs.end();)
 	{
 		if (Snakable *e = Tool::getAttr<Snakable>(**a))
 		{
 			if (e->isCollided)
 			{
 				a = world.objs.erase(a);
-			}else
+			}
+			else
 			{
 				++a;
 			}
-		}else
+		}
+		else
 		{
 			++a;
 		}
 	}
 	//ball被蛇碰到
 	int disappearball = 0;
-	for(auto a = world.objs.begin();a != world.objs.end();)
+	for (auto a = world.objs.begin(); a != world.objs.end();)
 	{
-		if(Eatable *e = Tool::getAttr<Eatable>(**a))
+		if (Eatable *e = Tool::getAttr<Eatable>(**a))
 		{
-			if(e->isEated)
+			if (e->isEated)
 			{
 				a = world.objs.erase(a);
 				disappearball++;
-			}else
+			}
+			else
 			{
 				++a;
 			}
-		}else
+		}
+		else
 		{
 			++a;
 		}
 	}
-	for(int i=0;i<disappearball;i++)
+	for (int i = 0; i < disappearball; i++)
 	{
 		Point p;
 		do
@@ -282,17 +264,17 @@ void death_system(World &world)
 }
 
 
-void input(World &world,const std::string &keyname)
+void input(World &world, const std::string &keyname)
 {
 	send_message_mutex.lock();
 	try
 	{
 		auto dire = convertor[keyname];
-		if(auto obj = get_self_snake(world))
+		if (auto obj = Tool::get_self_snake(world))
 		{
-			if(Snakable *snake = Tool::getAttr<Snakable>(*obj))
+			if (Snakable *snake = Tool::getAttr<Snakable>(*obj))
 			{
-				if(!isConverseDirect(snake->direction.direction,dire))
+				if (!Tool::isConverseDirect(snake->direction.direction, dire))
 				{
 					map<string, string> keyval;
 					keyval[Constant::current_frame_numb] = to_string(world.current_frame_numb);
@@ -302,19 +284,143 @@ void input(World &world,const std::string &keyname)
 				}
 			}
 		}
-	}catch(...)
+	}
+	catch (...)
 	{
 		std::cerr << "inpute error" << std::endl;
 	}
 	send_message_mutex.unlock();
 }
 
+void input(World &world,Direction::direction_enum dir)
+{
+	input(world, convertor2[dir]);
+}
 
-void render_system(World &world,Game *game)
+void robot(World &world, int snakeId)
+{
+	if (shared_ptr<Object> obj = Tool::get_snake(world, snakeId))
+	{
+		if (Snakable *snake = Tool::getAttr<Snakable>(*obj))
+		{
+			struct Star
+			{
+				Point p = { 0,0 };
+				int real = 0, predict = 0;
+				Direction::direction_enum dir;
+				Star* prePoint = nullptr;
+				int lenToStart = 10000;
+				bool operator<(const Star &rhs)const
+				{
+					return real + predict < rhs.real + rhs.predict;
+				}
+				static int nextPrediction(World &world, const Point &point)
+				{
+					int shortPath = 1e8;
+					for (auto &a : world.objs)
+					{
+						if (Eatable *e = Tool::getAttr<Eatable>(*a))
+						{
+							if (Position *p = Tool::getAttr<Position>(*a))
+							{
+								shortPath = std::min(shortPath, abs(p->point.c - point.c) + abs(p->point.r - point.r));
+							}
+						}
+					}
+					return shortPath;
+				}
+			};
+
+			vector<vector<int>> obstacle(world.height, vector<int>(world.width, 0));
+			vector<vector<std::array<Star, 4>>> dist(world.height, vector<std::array<Star, 4>>(world.width));
+
+			//设置obstacle表
+			for (auto &o : world.objs)
+			{
+				if (auto obs = Tool::getAttr<Obstacle>(*o))
+				{
+					if (auto pos = Tool::getAttr<Snakable>(*o))
+					{
+						for (Point &p : pos->body)
+						{
+							obstacle[p.r][p.c] = 1;
+						}
+					}
+					else if (auto pos = Tool::getAttr<Position>(*o))
+					{
+						obstacle[pos->point.r][pos->point.c] = 1;
+					}
+				}
+				else
+				{
+					if (auto eat = Tool::getAttr<Eatable>(*o))
+					{
+						if (auto pos = Tool::getAttr<Position>(*o))
+						{
+							obstacle[pos->point.r][pos->point.c] = 2;
+						}
+					}
+				}
+			}
+
+			std::priority_queue<Star*> q;
+			dist[snake->body.begin()->r][snake->body.begin()->c][snake->direction] =
+				{ *snake->body.begin(),0, Star::nextPrediction(world,*snake->body.begin()),snake->direction,nullptr,0 };
+			q.push(&dist[snake->body.begin()->r][snake->body.begin()->c][snake->direction]);
+
+			Direction::direction_enum resNextStep;
+
+			while (!q.empty())
+			{
+				Star *u = q.top(); q.pop();
+				if (obstacle[u->p.r][u->p.c] == 2)
+				{
+					Star *prePoint = u;
+					Star *curPoint = u;
+					while (curPoint->prePoint != nullptr)
+					{
+						resNextStep = prePoint->dir;
+						prePoint = curPoint;
+					}
+					break;
+				}
+				using E = Direction::direction_enum;
+				for (auto en : { E::up, E::down,E::left,E::right })
+				{
+					if (!Tool::isConverseDirect(en, u->dir))
+					{
+						Point nextPoint = Tool::nextDirectPoint(en, u->p);
+						if (Tool::noOuterPoint(world, nextPoint))
+						{
+							auto &dest = dist[nextPoint.r][nextPoint.c][en];
+							auto &source = dist[u->p.r][u->p.c][u->dir];
+							if (obstacle[nextPoint.r][nextPoint.c] != 1 && dest.lenToStart < source.lenToStart + 1)
+							{
+								dest.lenToStart = source.lenToStart + 1;
+								dest.p = nextPoint;
+								dest.dir = en;
+								dest.prePoint = &source;
+								dest.predict = Star::nextPrediction(world, nextPoint);
+								dest.real = dest.lenToStart;
+								q.push(&dist[dest.p.r][dest.p.c][dest.dir]);
+							}
+						}
+					}
+				}
+			}
+
+			input(world, resNextStep);
+		}
+	}
+}
+
+
+
+void render_system(World &world, Game *game)
 {
 	SDL_RenderClear(game->m_pRenderer.get()); // clear the renderer to the draw color
 
-	if(game->m_printHint)
+	if (game->m_printHint)
 	{
 		TheTextureManager::Instance()->drawText("press S to start game", 10, 60, game->m_pRenderer, { 255,255,255,100 });
 		TheTextureManager::Instance()->drawText("press Q to quit game", 10, 90, game->m_pRenderer, { 255,255,255,100 });
@@ -324,23 +430,23 @@ void render_system(World &world,Game *game)
 	{
 		if (Snakable* snakable = Tool::getAttr<Snakable>(*obj))
 		{
-			for(auto &body:snakable->body)
+			for (auto &body : snakable->body)
 			{
-				TheTextureManager::Instance()->draw(TheTextureManager::TextId::self_snake, 
-					(body.c - 1) * game->starter.pxSize, (body.r - 1) * game->starter.pxSize, 
+				TheTextureManager::Instance()->draw(TheTextureManager::TextId::self_snake,
+					(body.c - 1) * game->starter.pxSize, (body.r - 1) * game->starter.pxSize,
 					game->starter.pxSize, game->starter.pxSize, game->m_pRenderer);
 			}
 		}
 
-		if(Eatable* eatable = Tool::getAttr<Eatable>(*obj))
+		if (Eatable* eatable = Tool::getAttr<Eatable>(*obj))
 		{
-			if(Position * pos = Tool::getAttr<Position>(*obj))
+			if (Position * pos = Tool::getAttr<Position>(*obj))
 			{
-				TheTextureManager::Instance()->draw(TheTextureManager::TextId::ball, 
-					(pos->point.c-1) * game->starter.pxSize, 
-					(pos->point.r-1) * game->starter.pxSize, 
-					game->starter.pxSize, 
-					game->starter.pxSize, 
+				TheTextureManager::Instance()->draw(TheTextureManager::TextId::ball,
+					(pos->point.c - 1) * game->starter.pxSize,
+					(pos->point.r - 1) * game->starter.pxSize,
+					game->starter.pxSize,
+					game->starter.pxSize,
 					game->m_pRenderer);
 			}
 		}
@@ -359,21 +465,22 @@ void network_system(World& world)
 		send_message_buffer = "";
 		map<string, string> kv = deserial_item_map(tmp);
 
-		if(kv[Constant::self_id] == to_string(world.self_id))
+		if (kv[Constant::self_id] == to_string(world.self_id))
 		{
-			if(auto &p =  get_self_snake(world))
+			if (auto p = Tool::get_self_snake(world))
 			{
-				if(auto snake = Tool::getAttr<Snakable>(*p) )
+				if (auto snake = Tool::getAttr<Snakable>(*p))
 				{
 					auto next_direction = convertor[kv[Constant::press_key]];
-					if(!isConverseDirect(next_direction, snake->direction))
+					if (!Tool::isConverseDirect(next_direction, snake->direction))
 					{
 						snake->next_direction = next_direction;
 					}
 				}
 			}
 		}
-	}catch(...)
+	}
+	catch (...)
 	{
 		cout << "network system error" << endl;
 	}
