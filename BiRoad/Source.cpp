@@ -16,6 +16,7 @@ int main(int argc, char* argv[])
 	Starter starter;
 	starter.init();
 	Game game;
+	g_game = &game;
 	game.init(starter);
 
 	while(game.running())

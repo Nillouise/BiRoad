@@ -10,6 +10,7 @@
 using std::cout;
 using std::shared_ptr;
 using std::make_shared;
+Game *g_game = nullptr;
 namespace
 {
 
@@ -79,7 +80,7 @@ void Game::update()
 	}
 
 	static long long preUpdateTime = 0;
-	if(GetTickCount()/700 != preUpdateTime/700)
+	if(GetTickCount()/500 != preUpdateTime/500)
 	{
 		preUpdateTime = GetTickCount();
 		robot(world, world.self_id);
@@ -169,6 +170,10 @@ bool Game::initRender(Starter& starter)
 		return false;
 	}
 	if (!TheTextureManager::Instance()->loadRect(TheTextureManager::TextId::ball, m_pRenderer, 20, 20, m_ballColor[0], m_ballColor[1], m_ballColor[2]))
+	{
+		return false;
+	}
+	if (!TheTextureManager::Instance()->loadRect(TheTextureManager::TextId::virtualPath, m_pRenderer, 20, 20, 255, 255,255))
 	{
 		return false;
 	}

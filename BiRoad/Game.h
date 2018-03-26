@@ -8,6 +8,7 @@ using std::shared_ptr;
 class Game
 {
 	friend void render_system(World &world, Game *game);
+	friend void robot(World &world, int snakeId);
 public:
 	bool init(Starter &starter);
 	void handleEvents();
@@ -30,3 +31,5 @@ private:
 	bool initRender(Starter& starter);
 	World world;
 };
+
+extern Game *g_game;

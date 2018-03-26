@@ -109,8 +109,8 @@ Point Tool::nextDirectPoint(const Direction::direction_enum& e,const Point &p)
 		{ Direction::right,{ 1,0 } },
 	};
 	Point res;
-	res.c += offset[e].first;
-	res.r += offset[e].second;
+	res.c = p.c + offset[e].first;
+	res.r = p.r + offset[e].second;
 	return res;
 }
 

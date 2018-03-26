@@ -15,6 +15,7 @@ public:
 		other_snake,
 		ball,
 		animate,
+		virtualPath,
 	};
 	bool load(const std::string &fileName, TextId id, std::shared_ptr<SDL_Renderer> pRenderer);
 	bool loadRect(TextId id, std::shared_ptr<SDL_Renderer> pRenderer, int width, int height, int r, int g, int b);

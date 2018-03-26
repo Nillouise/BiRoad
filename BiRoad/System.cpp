@@ -296,47 +296,59 @@ void input(World &world,Direction::direction_enum dir)
 {
 	input(world, convertor2[dir]);
 }
-
+vector<Point> path;
 void robot(World &world, int snakeId)
 {
+	struct Star
+	{
+		Point p = { 0,0 };
+		int real = 0, predict = 0;
+		Direction::direction_enum dir;
+		Star* prePoint = nullptr;
+		int lenToStart = 10000;
+
+		Star(const Point &p = { 0, 0 }, int real = 0, int predict = 0, Direction::direction_enum dir = Direction::down, Star *prePoint = nullptr, int lenToStart = 10000) :
+			p(p), real(real), predict(predict), dir(dir), prePoint(prePoint), lenToStart(lenToStart) {}
+
+		bool operator<(const Star &rhs)const
+		{
+			if(real + predict != rhs.real + rhs.predict)
+			{
+				return real + predict < rhs.real + rhs.predict;
+			}else
+			{
+				return real < rhs.real;
+			}
+		}
+		//注意，为了在priority_queue中使用，这里调转了b和a
+		bool operator()(Star *a, Star *b) const{ return *b < *a; }
+		static int nextPrediction(World &world, const Point &point)
+		{
+			int shortPath = 1e8;
+			for (auto &a : world.objs)
+			{
+				if (Eatable *e = Tool::getAttr<Eatable>(*a))
+				{
+					if (Position *p = Tool::getAttr<Position>(*a))
+					{
+						shortPath = std::min(shortPath, abs(p->point.c - point.c) + abs(p->point.r - point.r));
+					}
+				}
+			}
+			if(shortPath>15)
+			{
+				cout << "exception" << endl;
+			}
+			return shortPath;
+		}
+	};
+	using E = Direction::direction_enum;
 	if (shared_ptr<Object> obj = Tool::get_snake(world, snakeId))
 	{
 		if (Snakable *snake = Tool::getAttr<Snakable>(*obj))
 		{
-			struct Star
-			{
-				Point p = { 0,0 };
-				int real = 0, predict = 0;
-				Direction::direction_enum dir;
-				Star* prePoint = nullptr;
-				int lenToStart = 10000;
-
-				Star(const Point &p = { 0, 0}, int real=0, int predict=0, Direction::direction_enum dir=Direction::down, Star *prePoint=nullptr, int lenToStart=10000) :
-					p(p),real(real),predict(predict),dir(dir),prePoint(prePoint),lenToStart(lenToStart){}
-
-				bool operator<(const Star &rhs)const
-				{
-					return real + predict < rhs.real + rhs.predict;
-				}
-				static int nextPrediction(World &world, const Point &point)
-				{
-					int shortPath = 1e8;
-					for (auto &a : world.objs)
-					{
-						if (Eatable *e = Tool::getAttr<Eatable>(*a))
-						{
-							if (Position *p = Tool::getAttr<Position>(*a))
-							{
-								shortPath = std::min(shortPath, abs(p->point.c - point.c) + abs(p->point.r - point.r));
-							}
-						}
-					}
-					return shortPath;
-				}
-			};
-
-			vector<vector<int>> obstacle(world.height, vector<int>(world.width, 0));
-			vector<vector<std::array<Star, 4>>> dist(world.height, vector<std::array<Star, 4>>(world.width));
+			vector<vector<int>> obstacle(world.height+2, vector<int>(world.width+2, 0));
+			vector<vector<std::array<Star, 4>>> dist(world.height+2, vector<std::array<Star, 4>>(world.width+2));
 
 			//设置obstacle表
 			for (auto o : world.objs)
@@ -367,7 +379,7 @@ void robot(World &world, int snakeId)
 				}
 			}
 
-			std::priority_queue<Star*> q;
+			std::priority_queue<Star*,vector<Star*>, Star> q;
 			dist[snake->body.begin()->r][snake->body.begin()->c][snake->direction] =
 				Star(*snake->body.begin(),0, Star::nextPrediction(world,*snake->body.begin()),snake->direction,nullptr,0);
 			q.push(&dist[snake->body.begin()->r][snake->body.begin()->c][snake->direction]);
@@ -379,16 +391,24 @@ void robot(World &world, int snakeId)
 				Star *u = q.top(); q.pop();
 				if (obstacle[u->p.r][u->p.c] == 2)
 				{
-					Star *prePoint = u;
+					Star *parentPoint = u;
 					Star *curPoint = u;
+					path.clear();
 					while (curPoint->prePoint != nullptr)
 					{
-						resNextStep = prePoint->dir;
-						prePoint = curPoint;
+						resNextStep = curPoint->dir;
+						parentPoint = curPoint;
+						curPoint = curPoint->prePoint;
+						path.push_back(curPoint->p);
 					}
+					path.pop_back();
+//					for (auto en : { E::up, E::down,E::left,E::right })
+//					{
+//						Point np = Tool::nextDirectPoint(en, *snake->body.begin());
+//						cout << dist[np.r][np.c][en].lenToStart << endl;
+//					}
 					break;
 				}
-				using E = Direction::direction_enum;
 				for (auto en : { E::up, E::down,E::left,E::right })
 				{
 					if (!Tool::isConverseDirect(en, u->dir))
@@ -398,14 +418,14 @@ void robot(World &world, int snakeId)
 						{
 							auto &dest = dist[nextPoint.r][nextPoint.c][en];
 							auto &source = dist[u->p.r][u->p.c][u->dir];
-							if (obstacle[nextPoint.r][nextPoint.c] != 1 && dest.lenToStart < source.lenToStart + 1)
+							if (obstacle[nextPoint.r][nextPoint.c] != 1 && dest.lenToStart > source.lenToStart + 1)
 							{
 								dest.lenToStart = source.lenToStart + 1;
 								dest.p = nextPoint;
 								dest.dir = en;
 								dest.prePoint = &source;
-								dest.predict = Star::nextPrediction(world, nextPoint);
 								dest.real = dest.lenToStart;
+								dest.predict = Star::nextPrediction(world, nextPoint);
 								q.push(&dist[dest.p.r][dest.p.c][dest.dir]);
 							}
 						}
@@ -413,12 +433,13 @@ void robot(World &world, int snakeId)
 				}
 			}
 
+			cout << "robot press " << convertor2[resNextStep]<<endl;
 			input(world, resNextStep);
 		}
 	}
 }
 
-
+#
 
 void render_system(World &world, Game *game)
 {
@@ -455,6 +476,16 @@ void render_system(World &world, Game *game)
 			}
 		}
 	}
+	for(auto &a:path)
+	{
+		TheTextureManager::Instance()->draw(TheTextureManager::TextId::virtualPath,
+			(a.c - 1) * g_game->starter.pxSize,
+			(a.r - 1) * g_game->starter.pxSize,
+			game->starter.pxSize,
+			game->starter.pxSize,
+			game->m_pRenderer);
+	}
+
 
 	SDL_RenderPresent(game->m_pRenderer.get());
 }
