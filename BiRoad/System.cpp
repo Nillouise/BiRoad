@@ -38,39 +38,6 @@ namespace {
 		{ Direction::down,Constant::down},{ Direction::left,Constant::left}
 	};
 
-	string serial_map(const map<string, string> &keyval)
-	{
-		string res;
-		int i = 0;
-		for (auto a : keyval)
-		{
-			if (i != 0)
-			{
-				res += Constant::item_delimiter;
-			}
-			i++;
-			res += a.first + Constant::equal_delimiter + a.second;
-		}
-		return res;
-	}
-
-
-	//这里是反序列化一个user内的所有item
-	map<string, string> deserial_item_map(const string &s)
-	{
-		map<string, string> res;
-		auto items = Tool::split(s, Constant::item_delimiter);
-		for (auto &item : items)
-		{
-			auto keyval = Tool::split(item, Constant::equal_delimiter);
-			if (keyval.size() == 2)
-			{
-				res[keyval[0]] = keyval[1];
-			}
-		}
-		return res;
-	}
-
 
 	bool collided(std::vector<Object*> &balls, const Snakable *snake)
 	{
@@ -280,7 +247,7 @@ void input(World &world, const std::string &keyname)
 					keyval[Constant::current_frame_numb] = to_string(world.current_frame_numb);
 					keyval[Constant::press_key] = keyname;
 					keyval[Constant::self_id] = to_string(world.self_id);
-					send_message_buffer = serial_map(keyval);
+					send_message_buffer = Tool::serial_map(keyval);
 				}
 			}
 		}
@@ -498,7 +465,7 @@ void network_system(World& world)
 	{
 		string tmp = send_message_buffer;
 		send_message_buffer = "";
-		map<string, string> kv = deserial_item_map(tmp);
+		map<string, string> kv = Tool::deserial_item_map(tmp);
 
 		if (kv[Constant::self_id] == to_string(world.self_id))
 		{

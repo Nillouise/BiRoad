@@ -2,6 +2,8 @@
 #include "Snakable.h"
 #include "Eatable.h"
 #include "Position.h"
+#include "Constant.h"
+using std::map;
 
 std::vector<std::string> Tool::split(const std::string& s, const std::string& delimiter)
 {
@@ -125,4 +127,35 @@ bool Tool::noOuterPoint(const World& world, const Point& p)
 }
 
 
+string Tool::serial_map(const map<string, string> &keyval)
+{
+	string res;
+	int i = 0;
+	for (auto a : keyval)
+	{
+		if (i != 0)
+		{
+			res += Constant::item_delimiter;
+		}
+		i++;
+		res += a.first + Constant::equal_delimiter + a.second;
+	}
+	return res;
+}
 
+
+//这里是反序列化一个user内的所有item
+map<string, string> Tool::deserial_item_map(const string &s)
+{
+	map<string, string> res;
+	auto items = Tool::split(s, Constant::item_delimiter);
+	for (auto &item : items)
+	{
+		auto keyval = Tool::split(item, Constant::equal_delimiter);
+		if (keyval.size() == 2)
+		{
+			res[keyval[0]] = keyval[1];
+		}
+	}
+	return res;
+}

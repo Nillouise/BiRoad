@@ -17,4 +17,18 @@ namespace Constant
 	const string down = "Down";
 	const string left = "Left";
 	const string right = "Right";
+
+	namespace GameMsg
+	{
+		const string width = "width";
+		const string height = "height";
+		const string pxWidth = "pxWidth";
+		const string selfId = "selfId";
+		const string randomSeed = "randomSeed";
+		const string balls = "balls";
+		const string snakes = "snakes";
+		const string timeStamp = "timeStamp";
+		const string press_key = Constant::press_key;
+		const string isInitMsg = "init message";
+	}
 }

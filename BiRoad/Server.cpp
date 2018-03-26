@@ -29,7 +29,7 @@ public:
 
 	void start()
 	{
-		asio::async_read(socket_,asio::buffer(recv_message),
+		asio::async_read_until(socket_, sbuf, '\n',
 			boost::bind(&tcp_connection::handle_read, shared_from_this(),
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));
@@ -44,11 +44,6 @@ private:
 	tcp_connection(asio::io_service& io_service)
 		: socket_(io_service)
 	{
-
-		asio::async_read_until(socket_, sbuf,'\n',
-			boost::bind(&tcp_connection::handle_write, shared_from_this(),
-				asio::placeholders::error,
-				asio::placeholders::bytes_transferred));
 	}
 
 	void handle_write(const asio::error_code& /*error*/,
@@ -56,14 +51,14 @@ private:
 	{
 
 	}
-	void handle_read(const asio::error_code &err,size_t size)
+	void handle_read(const asio::error_code &err, size_t size)
 	{
-		sbuf.commit(size);
+		//		sbuf.commit(size);
 		std::istream is(&sbuf);
 		std::string s;
-		is >> s;
-
-		asio::async_read(socket_, asio::buffer(recv_message),
+		std::getline(is, s);
+		std::cout << "size: " << s.size() << std::endl << s << std::endl;
+		asio::async_read_until(socket_, sbuf, '\n',
 			boost::bind(&tcp_connection::handle_read, shared_from_this(),
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));
@@ -77,7 +72,7 @@ private:
 class tcp_server
 {
 public:
-	tcp_server(asio::io_service& io_service,int port)
+	tcp_server(asio::io_service& io_service, int port)
 		: acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
 	{
 		start_accept();
@@ -112,7 +107,7 @@ int Server::init()
 {
 	try
 	{
-		tcp_server server(io_service);
+		tcp_server server(io_service,port);
 		io_service.run();
 	}
 	catch (std::exception& e)
