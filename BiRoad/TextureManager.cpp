@@ -79,23 +79,23 @@ void TextureManager::drawText(const std::string& text, int x, int y, std::shared
 	if (cache.find(text) == cache.end())
 	{
 		SDL_Surface* surfaceMessage = TTF_RenderText_Solid(Sans.get(), text.c_str(), White); // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
-		SDL_Texture* Message = SDL_CreateTextureFromSurface(pRenderer.get(), surfaceMessage); //now you can convert it into a texture
+		SDL_Texture* Message = SDL_CreateTextureFromSurface(pRenderer.get(), surfaceMessage); //now you can convert it into sbuf texture
 		SDL_FreeSurface(surfaceMessage);
 		cache[text] = Message;
 	}
 
 
-	SDL_Texture* Message = cache[text]; //now you can convert it into a texture
+	SDL_Texture* Message = cache[text]; //now you can convert it into sbuf texture
 
-	SDL_Rect Message_rect; //create a rect
+	SDL_Rect Message_rect; //create sbuf rect
 	Message_rect.x = x;  //controls the rect's c coordinate 
 	Message_rect.y = y; // controls the rect's r coordinte
 	Message_rect.w = text.length() * 16; // controls the width of the rect
 	Message_rect.h = 30; // controls the height of the rect
 
-						 //Mind you that (0,0) is on the top left of the window/screen, think a rect as the text's box, that way it would be very simple to understance
+						 //Mind you that (0,0) is on the top left of the window/screen, think sbuf rect as the text's box, that way it would be very simple to understance
 
-						 //Now since it's a texture, you have to put RenderCopy in your game loop area, the area where the whole code executes
+						 //Now since it's sbuf texture, you have to put RenderCopy in your game loop area, the area where the whole code executes
 
 	SDL_RenderCopy(pRenderer.get(), Message, nullptr, &Message_rect); //you put the renderer's name first, the Message, the crop size(you can ignore this if you don't want to dabble with cropping), and the rect which is the size and coordinate of your texture
 

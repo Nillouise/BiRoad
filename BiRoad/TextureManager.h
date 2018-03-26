@@ -8,7 +8,7 @@
 class TextureManager
 {
 public:
-	//Ã¿¸öäÖÈ¾Í¼Æ¬µÄid
+	//Ã¿ï¿½ï¿½ï¿½ï¿½È¾Í¼Æ¬ï¿½ï¿½id
 	enum class TextId
 	{
 		self_snake,
@@ -42,7 +42,7 @@ private:
 			[](TTF_Font* p)
 		{
 			TTF_CloseFont(p);
-		}); //this opens a font style and sets a size
+		}); //this opens sbuf font style and sets sbuf size
 	}
 
 	static std::shared_ptr<TextureManager> s_pInstance;

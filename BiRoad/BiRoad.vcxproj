@@ -165,6 +165,7 @@ xcopy "$(SolutionDir)SDL2_image\lib\x86\*.dll" "$(OutDir)" /y
   <ItemGroup>
     <ClCompile Include="asio.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Server.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Starter.cpp" />
     <ClCompile Include="System.cpp" />
@@ -186,6 +187,7 @@ xcopy "$(SolutionDir)SDL2_image\lib\x86\*.dll" "$(OutDir)" /y
     <ClInclude Include="Obstacle.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="Position.h" />
+    <ClInclude Include="Server.h" />
     <ClInclude Include="Snakable.h" />
     <ClInclude Include="Starter.h" />
     <ClInclude Include="System.h" />

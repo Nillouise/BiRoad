@@ -1,19 +1,15 @@
-#include <ctime>
+#include "Server.h"
+#include <asio/ip/tcp.hpp>
+#include <asio/impl/write.hpp>
 #include <iostream>
-#include <string>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
+#include <asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#include <asio.hpp>
-
+using namespace asio;
+using namespace asio::ip;
+using std::cerr;
 using asio::ip::tcp;
-
-std::string make_daytime_string()
-{
-	using namespace std; // For time_t, time and ctime;
-	time_t now = time(0);
-	return ctime(&now);
-}
 
 class tcp_connection
 	: public boost::enable_shared_from_this<tcp_connection>
@@ -33,7 +29,10 @@ public:
 
 	void start()
 	{
-		message_ = make_daytime_string();
+		asio::async_read(socket_,asio::buffer(recv_message),
+			boost::bind(&tcp_connection::handle_read, shared_from_this(),
+				asio::placeholders::error,
+				asio::placeholders::bytes_transferred));
 
 		asio::async_write(socket_, asio::buffer(message_),
 			boost::bind(&tcp_connection::handle_write, shared_from_this(),
@@ -45,22 +44,41 @@ private:
 	tcp_connection(asio::io_service& io_service)
 		: socket_(io_service)
 	{
+
+		asio::async_read_until(socket_, sbuf,'\n',
+			boost::bind(&tcp_connection::handle_write, shared_from_this(),
+				asio::placeholders::error,
+				asio::placeholders::bytes_transferred));
 	}
 
 	void handle_write(const asio::error_code& /*error*/,
 		size_t /*bytes_transferred*/)
 	{
-	}
 
+	}
+	void handle_read(const asio::error_code &err,size_t size)
+	{
+		sbuf.commit(size);
+		std::istream is(&sbuf);
+		std::string s;
+		is >> s;
+
+		asio::async_read(socket_, asio::buffer(recv_message),
+			boost::bind(&tcp_connection::handle_read, shared_from_this(),
+				asio::placeholders::error,
+				asio::placeholders::bytes_transferred));
+	}
+	asio::streambuf sbuf;
 	tcp::socket socket_;
 	std::string message_;
+	std::string recv_message;
 };
 
 class tcp_server
 {
 public:
-	tcp_server(asio::io_service& io_service)
-		: acceptor_(io_service, tcp::endpoint(tcp::v4(), 13))
+	tcp_server(asio::io_service& io_service,int port)
+		: acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
 	{
 		start_accept();
 	}
@@ -90,11 +108,10 @@ private:
 	tcp::acceptor acceptor_;
 };
 
-int main()
+int Server::init()
 {
 	try
 	{
-		asio::io_service io_service;
 		tcp_server server(io_service);
 		io_service.run();
 	}
@@ -103,5 +120,4 @@ int main()
 		std::cerr << e.what() << std::endl;
 	}
 
-	return 0;
 }

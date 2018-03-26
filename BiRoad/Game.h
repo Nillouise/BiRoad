@@ -15,7 +15,7 @@ public:
 	void update();
 	void render();
 	void clean();
-	// a function to access the private running variable
+	// sbuf function to access the private running variable
 	bool running() const { return m_bRunning; }
 private:
 	Starter starter;
