@@ -50,6 +50,7 @@ bool Client::send()
 	return true;
 }
 
+
 bool Client::recv(const asio::error_code& err, size_t size)
 {
 	if (err)
@@ -108,6 +109,7 @@ bool Client::firstReceive(const asio::error_code& err, size_t size)
 	return true;
 }
 
+
 string Client::getSendMsg()
 {
 	string res;
@@ -122,6 +124,7 @@ string Client::getSendMsg()
 	sendMsgMutex.unlock();
 	return res;
 }
+
 
 string Client::getRecvMsg()
 {

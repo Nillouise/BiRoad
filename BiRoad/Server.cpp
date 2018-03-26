@@ -53,7 +53,7 @@ private:
 	}
 	void handle_read(const asio::error_code &err, size_t size)
 	{
-		//		sbuf.commit(size);
+		//sbuf.commit(size);
 		std::istream is(&sbuf);
 		std::string s;
 		std::getline(is, s);

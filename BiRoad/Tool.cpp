@@ -20,6 +20,7 @@ std::vector<std::string> Tool::split(const std::string& s, const std::string& de
 	return res;
 }
 
+
 Point Tool::getRandomBall(int height, int width)
 {
 	static bool init = false;
@@ -33,6 +34,7 @@ Point Tool::getRandomBall(int height, int width)
 	std::uniform_int_distribution<std::mt19937::result_type> randomWidth(0+1, width);
 	return Point(randomHeight(rng), randomWidth(rng));
 }
+
 
 bool Tool::newBallConflictWithWorld(const World& world,const Point &point)
 {
@@ -62,6 +64,7 @@ bool Tool::newBallConflictWithWorld(const World& world,const Point &point)
 	return false;
 }
 
+
 std::shared_ptr<Object> Tool::get_self_snake(World& world)
 {
 	for (auto a : world.objs)
@@ -77,6 +80,7 @@ std::shared_ptr<Object> Tool::get_self_snake(World& world)
 	return nullptr;
 }
 
+
 std::shared_ptr<Object> Tool::get_snake(World& world, int id)
 {
 	for (auto a : world.objs)
@@ -91,6 +95,7 @@ std::shared_ptr<Object> Tool::get_snake(World& world, int id)
 	}
 	return nullptr;
 }
+
 
 bool Tool::isConverseDirect(const Direction::direction_enum& e1, const Direction::direction_enum& e2)
 {
@@ -115,6 +120,7 @@ Point Tool::nextDirectPoint(const Direction::direction_enum& e,const Point &p)
 	res.r = p.r + offset[e].second;
 	return res;
 }
+
 
 bool Tool::noOuterPoint(const World& world, const Point& p)
 {

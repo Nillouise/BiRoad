@@ -25,6 +25,7 @@ public:
 
 };
 
+
 template <typename T>
 T* Tool::getAttr(const Object& obj)
 {
