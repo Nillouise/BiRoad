@@ -310,6 +310,10 @@ void robot(World &world, int snakeId)
 				Direction::direction_enum dir;
 				Star* prePoint = nullptr;
 				int lenToStart = 10000;
+
+				Star(const Point &p = { 0, 0}, int real=0, int predict=0, Direction::direction_enum dir=Direction::down, Star *prePoint=nullptr, int lenToStart=10000) :
+					p(p),real(real),predict(predict),dir(dir),prePoint(prePoint),lenToStart(lenToStart){}
+
 				bool operator<(const Star &rhs)const
 				{
 					return real + predict < rhs.real + rhs.predict;
@@ -335,7 +339,7 @@ void robot(World &world, int snakeId)
 			vector<vector<std::array<Star, 4>>> dist(world.height, vector<std::array<Star, 4>>(world.width));
 
 			//…Ë÷√obstacle±Ì
-			for (auto &o : world.objs)
+			for (auto o : world.objs)
 			{
 				if (auto obs = Tool::getAttr<Obstacle>(*o))
 				{
@@ -365,10 +369,10 @@ void robot(World &world, int snakeId)
 
 			std::priority_queue<Star*> q;
 			dist[snake->body.begin()->r][snake->body.begin()->c][snake->direction] =
-				{ *snake->body.begin(),0, Star::nextPrediction(world,*snake->body.begin()),snake->direction,nullptr,0 };
+				Star(*snake->body.begin(),0, Star::nextPrediction(world,*snake->body.begin()),snake->direction,nullptr,0);
 			q.push(&dist[snake->body.begin()->r][snake->body.begin()->c][snake->direction]);
 
-			Direction::direction_enum resNextStep;
+			Direction::direction_enum resNextStep = Direction::down;
 
 			while (!q.empty())
 			{

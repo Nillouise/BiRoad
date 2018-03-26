@@ -82,6 +82,7 @@ void Game::update()
 	if(GetTickCount()/700 != preUpdateTime/700)
 	{
 		preUpdateTime = GetTickCount();
+		robot(world, world.self_id);
 		network_system(world);
 		snakable_system(world);
 		eatable_system(world);

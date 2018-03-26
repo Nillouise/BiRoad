@@ -20,3 +20,16 @@ public:
 	static bool noOuterPoint(const World &world, const Point &p);
 };
 
+template <typename T>
+T* Tool::getAttr(const Object& obj)
+{
+	std::map<string, std::shared_ptr<ECS>>::const_iterator a = obj.attributes.find(typeid(T).name());
+	if (a == obj.attributes.end())
+	{
+		return nullptr;
+	}
+	else
+	{
+		return dynamic_cast<T*>(a->second.get());
+	}
+}

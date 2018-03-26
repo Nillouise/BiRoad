@@ -16,3 +16,5 @@ void input(World &world, const std::string &keyname);
 void render_system(World &world, Game *game);
 
 void network_system(World &world);
+
+void robot(World &world, int snakeId);
