@@ -29,8 +29,8 @@ int main(int argc, char* argv[])
 //	}
 //	game.clean();
 //
-//	Server server(4000,2);
-//	server.init();
+	Server server(4000,2);
+	server.init();
 
 	return 0;
 }

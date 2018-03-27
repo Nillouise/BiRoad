@@ -51,7 +51,7 @@ public:
 			boost::bind(&tcp_connection::handle_read, shared_from_this(),
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));
-
+		message_ = "connect successful";
 		asio::async_write(socket_, asio::buffer(message_),
 			boost::bind(&tcp_connection::handle_write, shared_from_this(),
 				asio::placeholders::error,
@@ -77,6 +77,11 @@ private:
 
 	void handle_read(const asio::error_code &err, size_t size)
 	{
+		if(err)
+		{
+			return;
+		}
+
 		//sbuf.commit(size);
 		std::istream is(&sbuf);
 		std::string s;
@@ -99,7 +104,7 @@ class tcp_server
 {
 public:
 	tcp_server(asio::io_service& io_service, int port,
-		int targetClientsNumb = 0, int curClientsNumb = 0)
+		int targetClientsNumb, int curClientsNumb = 0)
 		: acceptor_(io_service, tcp::endpoint(tcp::v4(), port)),
 		targetClientsNumb(targetClientsNumb),
 		curClientsNumb(curClientsNumb)
@@ -175,7 +180,7 @@ private:
 	}
 
 	std::default_random_engine engine = std::default_random_engine(2222);
-	vector<vector<tcp_connection::pointer>> connections;
+	vector<vector<tcp_connection::pointer>> connections = { vector<tcp_connection::pointer>() };
 	tcp::acceptor acceptor_;
 	int targetClientsNumb = 0;
 	int curClientsNumb = 0;
@@ -186,7 +191,7 @@ int Server::init()
 {
 	try
 	{
-		tcp_server server(io_service, port);
+		tcp_server server(io_service, port,targetClientsNumb);
 		io_service.run();
 	}
 	catch (std::exception& e)
