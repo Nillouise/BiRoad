@@ -6,10 +6,14 @@
 #include <asio.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include<vector>
+#include "Point.h"
 using namespace asio;
 using namespace asio::ip;
 using std::cerr;
 using asio::ip::tcp;
+using std::vector;
+using std::string;
 
 class tcp_connection
 	: public boost::enable_shared_from_this<tcp_connection>
@@ -20,6 +24,15 @@ public:
 	static pointer create(asio::io_service& io_service)
 	{
 		return pointer(new tcp_connection(io_service));
+	}
+
+	bool send(const string &sendMsg)
+	{
+		string tmp = sendMsg;
+		asio::async_write(socket_, asio::buffer(tmp),
+			boost::bind(&tcp_connection::handle_write, shared_from_this(),
+				asio::placeholders::error,
+				asio::placeholders::bytes_transferred));
 	}
 
 	tcp::socket& socket()
@@ -39,6 +52,9 @@ public:
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));
 	}
+
+	int id = 0;
+	Point initPoint;
 
 private:
 	tcp_connection(asio::io_service& io_service)
@@ -72,8 +88,11 @@ private:
 class tcp_server
 {
 public:
-	tcp_server(asio::io_service& io_service, int port)
-		: acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
+	tcp_server(asio::io_service& io_service, int port, 
+		int targetClientsNumb = 0,int curClientsNumb = 0)
+		: acceptor_(io_service, tcp::endpoint(tcp::v4(), port)),
+			targetClientsNumb(targetClientsNumb),
+		curClientsNumb(curClientsNumb)
 	{
 		start_accept();
 	}
@@ -95,12 +114,30 @@ private:
 		if (!error)
 		{
 			new_connection->start();
+			connections.back().push_back(new_connection);
+			curClientsNumb++;
+			if(curClientsNumb%targetClientsNumb==0)
+			{
+				startGameMsg();
+
+				connections.emplace_back();
+			}
 		}
 
 		start_accept();
 	}
 
+	void startGameMsg()
+	{
+		
+
+
+	}
+
+	vector<vector<tcp_connection::pointer>> connections;
 	tcp::acceptor acceptor_;
+	int targetClientsNumb = 0;
+	int curClientsNumb = 0;
 };
 
 int Server::init()

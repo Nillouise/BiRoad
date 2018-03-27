@@ -21,7 +21,7 @@ void Client::init()
 	isInit = false;
 	isDown = false;
 
-	tcp::resolver resolver(ioService);
+//	tcp::resolver resolver(ioService);
 	tcp::endpoint endpoint(asio::ip::address_v4::from_string(ip), port);
 	asio::connect(socket, endpoint);
 
@@ -39,13 +39,14 @@ bool Client::send()
 	try
 	{
 		sendData = sendMsg;
+		sendMsg = "";
 	}
 	catch (...)
 	{
 		std::cout << "client send msg error" << std::endl;
 	}
 	sendMsgMutex.unlock();
-
+	//主义这里我没注册回调函数。
 	asio::async_write(socket, asio::buffer(sendData), nullptr);
 	return true;
 }
@@ -66,12 +67,16 @@ bool Client::recv(const asio::error_code& err, size_t size)
 	recvMsgMutex.lock();
 	try
 	{
-		recvMsg = s;
+		recvMsg += s;
 	}catch(...)
 	{
 		std::cout << "client recv msg error" << std::endl;
 	}
 	recvMsgMutex.unlock();
+	asio::async_read_until(socket, recvbuf, '\n',
+		boost::bind(&Client::firstReceive, shared_from_this(),
+			asio::placeholders::error,
+			asio::placeholders::bytes_transferred));
 	return true;
 }
 

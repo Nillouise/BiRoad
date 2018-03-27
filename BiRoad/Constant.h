@@ -29,6 +29,6 @@ namespace Constant
 		const string snakes = "snakes";
 		const string timeStamp = "timeStamp";
 		const string press_key = Constant::press_key;
-		const string isInitMsg = "init message";
+		const string isFinishInitMsg = "init message";
 	}
 }
