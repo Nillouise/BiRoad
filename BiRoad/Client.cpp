@@ -23,7 +23,9 @@ void Client::init()
 
 //	tcp::resolver resolver(ioService);
 	tcp::endpoint endpoint(asio::ip::address_v4::from_string(ip), port);
-	asio::connect(socket, endpoint);
+	//fixme:客户端connect到底应不应该用阻塞式？
+//	asio::connect(socket, endpoint);
+	socket.connect(endpoint);
 
 	asio::async_read_until(socket, recvbuf, '\n',
 		boost::bind(&Client::firstReceive, shared_from_this(),
@@ -46,8 +48,8 @@ bool Client::send()
 		std::cout << "client send msg error" << std::endl;
 	}
 	sendMsgMutex.unlock();
-	//主义这里我没注册回调函数。
-	asio::async_write(socket, asio::buffer(sendData), nullptr);
+	asio::async_write(socket, asio::buffer(sendData), boost::bind(&Client::handle_write, shared_from_this(),
+		asio::placeholders::error, asio::placeholders::bytes_transferred));
 	return true;
 }
 
@@ -95,7 +97,7 @@ bool Client::firstReceive(const asio::error_code& err, size_t size)
 
 	map<string, string> kv = Tool::deserial_item_map(s);
 	initData.insert(kv.begin(), kv.end());
-	if(kv.find(Constant::GameMsg::isInitMsg)!=kv.end())
+	if(kv.find(Constant::GameMsg::isFinishInitMsg)!=kv.end())
 	{
 		isInit = true;
 		asio::async_read_until(socket, recvbuf, '\n',

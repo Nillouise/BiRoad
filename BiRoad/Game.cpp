@@ -10,7 +10,6 @@
 using std::cout;
 using std::shared_ptr;
 using std::make_shared;
-Game *g_game = nullptr;
 namespace
 {
 

@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <asio/io_service.hpp>
-#include "Game.h"
 #include <asio/ip/tcp.hpp>
 #include <asio/streambuf.hpp>
 #include <asio/ip/tcp.hpp>
@@ -42,4 +41,8 @@ private:
 	string ip;
 	int port;
 	asio::streambuf recvbuf;
+
+	void handle_write(const asio::error_code& /*error*/,
+		size_t /*bytes_transferred*/)
+	{}
 };

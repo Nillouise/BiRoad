@@ -36,6 +36,7 @@ public:
 		return socket_;
 	}
 
+
 	void start()
 	{
 		message_ = make_daytime_string();
@@ -50,17 +51,20 @@ public:
 				asio::placeholders::bytes_transferred));
 	}
 
+
 private:
 	tcp_connection(asio::io_service& io_service)
 		: socket_(io_service)
-	{
-	}
+	{}
+
 
 	void handle_write(const asio::error_code& /*error*/,
 		size_t /*bytes_transferred*/)
 	{
 
 	}
+
+
 	void handle_read(const asio::error_code &err, size_t size)
 	{
 //		sbuf.commit(size);

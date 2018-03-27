@@ -1,14 +1,13 @@
 #include "Server.h"
-#include <asio/ip/tcp.hpp>
-#include <asio/impl/write.hpp>
 #include <iostream>
-#include <boost/bind/bind.hpp>
+#include <asio/ip/tcp.hpp>
 #include <asio.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <vector>
 #include "Point.h"
 #include "Constant.h"
 #include "Tool.h"
+#include <boost/bind/bind.hpp>
 using namespace asio;
 using namespace asio::ip;
 using std::cerr;
@@ -36,6 +35,7 @@ public:
 			boost::bind(&tcp_connection::handle_write, shared_from_this(),
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));
+		return true;
 	}
 
 
@@ -92,6 +92,8 @@ private:
 	std::string message_;
 	std::string recv_message;
 };
+
+
 
 class tcp_server
 {
@@ -191,4 +193,5 @@ int Server::init()
 	{
 		std::cerr << e.what() << std::endl;
 	}
+	return 0;
 }

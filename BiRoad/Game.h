@@ -31,5 +31,4 @@ private:
 	bool initRender(Starter& starter);
 	World world;
 };
-
 extern Game *g_game;
