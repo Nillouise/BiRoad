@@ -11,6 +11,8 @@ namespace Constant
 	const string item_delimiter = "|";
 	const string equal_delimiter = "=";
 	const string user_delimiter = "\n";
+	const string bool_true = "true";
+	const string bool_false = "false";
 	//stater那个ini file用到的分割器
 	const string starter_delimiter = "=";
 	const string up = "Up";
@@ -24,9 +26,11 @@ namespace Constant
 		const string height = "height";
 		const string pxWidth = "pxWidth";
 		const string selfId = "selfId";
+		const string snakeId = "snakeId";
 		const string randomSeed = "randomSeed";
 		const string balls = "balls";
-		const string snakes = "snakes";
+		const string pointC = "pointC";
+		const string pointR = "pointR";
 		const string timeStamp = "timeStamp";
 		const string press_key = Constant::press_key;
 		const string isFinishInitMsg = "init message";
