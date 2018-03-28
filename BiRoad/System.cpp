@@ -14,7 +14,6 @@
 #include <queue>
 #include<array>
 
-
 using std::to_string;
 using std::map;
 using std::cout;
@@ -32,6 +31,7 @@ namespace {
 		{ Constant::up,Direction::up }, { Constant::right,Direction::right },
 		{ Constant::down,Direction::down },{ Constant::left,Direction::left }
 	};
+
 
 	std::map<Direction::direction_enum,std::string> convertor2{
 		{ Direction::up,Constant::up },{ Direction::right,Constant::right},

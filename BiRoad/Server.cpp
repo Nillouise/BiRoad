@@ -17,11 +17,19 @@ using std::string;
 using std::map;
 using std::to_string;
 
+
 class tcp_connection
 	: public boost::enable_shared_from_this<tcp_connection>
 {
 public:
 	typedef boost::shared_ptr<tcp_connection> pointer;
+
+
+	int id = 0;
+	Point initPoint;
+	bool isInitPlayerMsg = false;
+
+
 	static pointer create(asio::io_service& io_service)
 	{
 		return pointer(new tcp_connection(io_service));
@@ -45,23 +53,47 @@ public:
 	}
 
 
-	void start()
+	void start(map<string, string> initMsg)
 	{
 		asio::async_read_until(socket_, sbuf, '\n',
 			boost::bind(&tcp_connection::handle_read, shared_from_this(),
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));
-		message_ = "connect successful";
+
+		message_ = Tool::serial_map(initMsg);
 		asio::async_write(socket_, asio::buffer(message_),
 			boost::bind(&tcp_connection::handle_write, shared_from_this(),
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));
 	}
+	
 
-	int id = 0;
-	Point initPoint;
+	void playerMsg(vector<string> playerMsg)
+	{
+		string res;
+		for (auto &a:playerMsg)
+		{
+			res = res+a+'\n';
+		}
 
+		asio::async_write(socket_, asio::buffer(res),
+			boost::bind(&tcp_connection::playerMsgHandler, shared_from_this(),
+				asio::placeholders::error,
+				asio::placeholders::bytes_transferred));
+	}
+
+
+	void playerMsgHandler(const asio::error_code& /*error*/,
+		size_t /*bytes_transferred*/)
+	{
+		isInitPlayerMsg = true;
+	}
 private:
+	asio::streambuf sbuf;
+	tcp::socket socket_;
+	std::string message_;
+	std::string recv_message;
+
 	tcp_connection(asio::io_service& io_service)
 		: socket_(io_service)
 	{
@@ -77,7 +109,7 @@ private:
 
 	void handle_read(const asio::error_code &err, size_t size)
 	{
-		if(err)
+		if (err)
 		{
 			return;
 		}
@@ -92,10 +124,6 @@ private:
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));
 	}
-	asio::streambuf sbuf;
-	tcp::socket socket_;
-	std::string message_;
-	std::string recv_message;
 };
 
 
@@ -111,7 +139,9 @@ public:
 	{
 		start_accept();
 	}
-
+	int width;
+	int height;
+	int pxWidth;
 
 private:
 	void start_accept()
@@ -131,7 +161,14 @@ private:
 		if (!error)
 		{
 			new_connection->id = curClientsNumb;
-			new_connection->start();
+			new_connection->start(
+			{
+					{ Constant::GameMsg::selfId,to_string(new_connection->id) },
+					{ Constant::GameMsg::width,to_string(width)},
+					{ Constant::GameMsg::height, to_string(height) },
+					{ Constant::GameMsg::pxWidth,to_string(pxWidth) }
+			}
+			);
 			connections.back().push_back(new_connection);
 
 			curClientsNumb++;
@@ -187,11 +224,14 @@ private:
 };
 
 
-int Server::init()
+int Server::init(int height, int width, int pxWidth)
 {
 	try
 	{
-		tcp_server server(io_service, port,targetClientsNumb);
+		tcp_server s(io_service, port, targetClientsNumb);
+		s.height = height;
+		s.width = width;
+		s.pxWidth = pxWidth;
 		io_service.run();
 	}
 	catch (std::exception& e)

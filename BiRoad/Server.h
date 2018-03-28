@@ -8,7 +8,7 @@ public:
 	//有几个client连接才会开始启动游戏
 	int targetClientsNumb = 0;
 	int curClientsNumb = 0;
-	int init();
+	int init(int height,int width,int pxWidth);
 	asio::io_service io_service;
 	Server(int port,int targetClientsNumb):
 		port(port),targetClientsNumb(targetClientsNumb){}
