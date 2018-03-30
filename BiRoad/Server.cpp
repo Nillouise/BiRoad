@@ -3,6 +3,7 @@
 #include <asio/ip/tcp.hpp>
 #include <asio.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <utility>
 #include <vector>
 #include "Point.h"
 #include "Constant.h"
@@ -16,7 +17,7 @@ using std::vector;
 using std::string;
 using std::map;
 using std::to_string;
-
+class Scheduler;
 
 class tcp_connection
 	: public boost::enable_shared_from_this<tcp_connection>
@@ -26,6 +27,8 @@ public:
 
 
 	int id = 0;
+	int groupId = 0;
+	shared_ptr<Scheduler> scheduler;
 	Point initPoint;
 	bool isInitPlayerMsg = false;
 
@@ -127,6 +130,19 @@ private:
 };
 
 
+//此类会定时发送消息给客户端
+class Scheduler
+{
+public:
+	Scheduler(vector<tcp_connection::pointer> clients) :
+		clients(std::move(clients)) {}
+
+	int start();
+
+private:
+	vector<tcp_connection::pointer> clients;
+};
+
 
 class tcp_server
 {
@@ -161,6 +177,7 @@ private:
 		if (!error)
 		{
 			new_connection->id = curClientsNumb;
+			new_connection->groupId = connectionsSeed;
 			new_connection->start(
 			{
 					{ Constant::GameMsg::selfId,to_string(new_connection->id) },
@@ -169,14 +186,13 @@ private:
 					{ Constant::GameMsg::pxWidth,to_string(pxWidth) }
 			}
 			);
-			connections.back().push_back(new_connection);
 
+			connections[connectionsSeed].push_back(new_connection);
 			curClientsNumb++;
-			if (curClientsNumb%targetClientsNumb == 0)
+			if (connections[connectionsSeed].size() == targetClientsNumb)
 			{
-				startGameMsg();
-
-				connections.emplace_back();
+				startGameMsg(connectionsSeed);
+				connectionsSeed++;
 			}
 		}
 
@@ -184,16 +200,16 @@ private:
 	}
 
 
-	void startGameMsg()
+	void startGameMsg(int xgroup)
 	{
 		//这里设置每条connect的数据
-		for (auto &a : connections.back())
+		for (auto &a : connections[xgroup])
 		{
 			a->initPoint = Point(a->id * 2 + 2, a->id * 2 + 2);
 		}
 
 		vector<string> totalData;
-		for (auto &a : connections.back())
+		for (auto &a : connections[xgroup])
 		{
 			map<string, string> but;
 			but[Constant::GameMsg::snakeId] = to_string(a->id);
@@ -202,22 +218,21 @@ private:
 
 			totalData.push_back(Tool::serial_map(but));
 		}
-		map<string, string> seed;
-		seed[Constant::GameMsg::randomSeed] = to_string(engine());
-		totalData.push_back(Tool::serial_map(seed));
-
-		for (auto &conn : connections.back())
+		totalData.push_back(Tool::serial_map({ Constant::GameMsg::randomSeed ,to_string(engine())}));
+		totalData.push_back(Tool::serial_map( { Constant::GameMsg::isFinishInitMsg,Constant::bool_true }));
+		shared_ptr<Scheduler> scheduler = make_shared<Scheduler>(connections[xgroup]);
+		for (auto &conn : connections[xgroup])
 		{
-			for (auto &data : totalData)
-			{
-				conn->send(data);
-			}
-			conn->send(Tool::serial_map({ {Constant::GameMsg::isFinishInitMsg,Constant::bool_true} }));
+			conn->scheduler = scheduler;
+			conn->playerMsg(totalData);
 		}
+		scheduler->start();
 	}
 
 	std::default_random_engine engine = std::default_random_engine(2222);
-	vector<vector<tcp_connection::pointer>> connections = { vector<tcp_connection::pointer>() };
+	int connectionsSeed = 0;
+	//FIXME：这种数据结构不适合并行呀
+	map<int,vector<tcp_connection::pointer>> connections;
 	tcp::acceptor acceptor_;
 	int targetClientsNumb = 0;
 	int curClientsNumb = 0;
@@ -232,11 +247,13 @@ int Server::init(int height, int width, int pxWidth)
 		s.height = height;
 		s.width = width;
 		s.pxWidth = pxWidth;
+		std::cout << "server init successful" << std::endl;
 		io_service.run();
 	}
 	catch (std::exception& e)
 	{
 		std::cerr << e.what() << std::endl;
+		return 1;
 	}
 	return 0;
 }

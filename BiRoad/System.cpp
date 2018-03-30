@@ -302,10 +302,6 @@ void robot(World &world, int snakeId)
 					}
 				}
 			}
-			if(shortPath>15)
-			{
-				cout << "exception" << endl;
-			}
 			return shortPath;
 		}
 	};
