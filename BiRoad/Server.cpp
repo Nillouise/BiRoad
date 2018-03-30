@@ -9,6 +9,7 @@
 #include "Constant.h"
 #include "Tool.h"
 #include <boost/bind/bind.hpp>
+#include <mutex>
 using namespace asio;
 using namespace asio::ip;
 using std::cerr;
@@ -25,13 +26,13 @@ class tcp_connection
 public:
 	typedef boost::shared_ptr<tcp_connection> pointer;
 
-
 	int id = 0;
 	int groupId = 0;
 	shared_ptr<Scheduler> scheduler;
+	std::map<string, string> recv_map;
 	Point initPoint;
 	bool isInitPlayerMsg = false;
-
+	std::mutex lock;
 
 	static pointer create(asio::io_service& io_service)
 	{
@@ -95,8 +96,6 @@ private:
 	asio::streambuf sbuf;
 	tcp::socket socket_;
 	std::string message_;
-	std::string recv_message;
-
 	tcp_connection(asio::io_service& io_service)
 		: socket_(io_service)
 	{
@@ -116,16 +115,26 @@ private:
 		{
 			return;
 		}
+		lock.lock();
+		try
+		{
+			//sbuf.commit(size);
+			std::istream is(&sbuf);
+			std::string s;
+			std::getline(is, s);
+			recv_map = Tool::deserial_item_map(s);
 
-		//sbuf.commit(size);
-		std::istream is(&sbuf);
-		std::string s;
-		std::getline(is, s);
-		std::cout << "size: " << s.size() << std::endl << s << std::endl;
-		asio::async_read_until(socket_, sbuf, '\n',
-			boost::bind(&tcp_connection::handle_read, shared_from_this(),
-				asio::placeholders::error,
-				asio::placeholders::bytes_transferred));
+
+			asio::async_read_until(socket_, sbuf, '\n',
+				boost::bind(&tcp_connection::handle_read, shared_from_this(),
+					asio::placeholders::error,
+					asio::placeholders::bytes_transferred));
+		}catch(...)
+		{
+			std::cerr <<"client tcp connection "<<id << " error" << std::endl;
+			throw;
+		}
+		lock.unlock();
 	}
 };
 
@@ -134,14 +143,59 @@ private:
 class Scheduler
 {
 public:
-	Scheduler(vector<tcp_connection::pointer> clients) :
-		clients(std::move(clients)) {}
+	Scheduler(vector<tcp_connection::pointer> clients, asio::io_service& io,int currentFrame) :
+		clients(std::move(clients)),timer_(io, gap),currentFrame(currentFrame) {}
 
 	int start();
 
+
+	boost::posix_time::seconds gap = boost::posix_time::seconds(1);
+
 private:
 	vector<tcp_connection::pointer> clients;
+	asio::deadline_timer timer_;
+	int currentFrame = 0;
+	void scheduleSend(const asio::error_code& /*error*/);
 };
+
+
+int Scheduler::start()
+{
+	timer_.async_wait(boost::bind(&Scheduler::scheduleSend, this, asio::placeholders::error));
+	return 0;
+}
+
+void Scheduler::scheduleSend(const asio::error_code& err)
+{
+	if(err)
+	{
+		return;
+	}
+	string res;
+
+	for(auto &a:clients)
+	{
+		a->lock.lock();
+		try
+		{
+			if(a->recv_map[Constant::GameMsg::timeStamp]==to_string(currentFrame))
+			{
+				res+=Tool::serial_map(a->recv_map)+'\n';
+			}
+		}catch(...)
+		{
+			
+		}
+		a->lock.unlock();
+	}
+	for(auto &a:clients)
+	{
+		a->send(res);
+	}
+	timer_.expires_at(timer_.expires_at() + gap);
+	timer_.async_wait(boost::bind(&Scheduler::scheduleSend, this, asio::placeholders::error));
+}
+
 
 
 class tcp_server
@@ -149,7 +203,8 @@ class tcp_server
 public:
 	tcp_server(asio::io_service& io_service, int port,
 		int targetClientsNumb, int curClientsNumb = 0)
-		: acceptor_(io_service, tcp::endpoint(tcp::v4(), port)),
+		: io(io_service),
+		acceptor_(io_service, tcp::endpoint(tcp::v4(), port)),
 		targetClientsNumb(targetClientsNumb),
 		curClientsNumb(curClientsNumb)
 	{
@@ -220,7 +275,7 @@ private:
 		}
 		totalData.push_back(Tool::serial_map({ Constant::GameMsg::randomSeed ,to_string(engine())}));
 		totalData.push_back(Tool::serial_map( { Constant::GameMsg::isFinishInitMsg,Constant::bool_true }));
-		shared_ptr<Scheduler> scheduler = make_shared<Scheduler>(connections[xgroup]);
+		shared_ptr<Scheduler> scheduler = make_shared<Scheduler>(connections[xgroup],io,0);
 		for (auto &conn : connections[xgroup])
 		{
 			conn->scheduler = scheduler;
@@ -229,10 +284,12 @@ private:
 		scheduler->start();
 	}
 
+
 	std::default_random_engine engine = std::default_random_engine(2222);
 	int connectionsSeed = 0;
 	//FIXME：这种数据结构不适合并行呀
 	map<int,vector<tcp_connection::pointer>> connections;
+	io_service &io;
 	tcp::acceptor acceptor_;
 	int targetClientsNumb = 0;
 	int curClientsNumb = 0;
