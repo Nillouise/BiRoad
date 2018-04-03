@@ -8,7 +8,7 @@
 class TextureManager
 {
 public:
-	//ÿ����ȾͼƬ��id
+	//每个资源的id
 	enum class TextId
 	{
 		self_snake,
