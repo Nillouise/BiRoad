@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 //	}
 //	game.clean();
 
-	Server server(4444,2);
+	Server server(4444,1);
 	server.init(100,100,5);
 
 	return 0;

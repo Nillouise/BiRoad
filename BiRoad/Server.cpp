@@ -42,8 +42,8 @@ public:
 
 	bool send(const string &sendMsg)
 	{
-		string tmp = sendMsg;
-		asio::async_write(socket_, asio::buffer(tmp),
+		this->sendMsgBuff = sendMsg;
+		asio::async_write(socket_, asio::buffer(this->sendMsgBuff),
 			boost::bind(&tcp_connection::handle_write, shared_from_this(),
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));
@@ -72,15 +72,14 @@ public:
 	}
 	
 
-	void playerMsg(vector<string> playerMsg)
+	void sendPlayerMsg(vector<string> playerMsg)
 	{
-		string res;
 		for (auto &a:playerMsg)
 		{
-			res = res+a+'\n';
+			sendPlayerMsgBuff = sendPlayerMsgBuff +a+'\n';
 		}
 
-		asio::async_write(socket_, asio::buffer(res),
+		asio::async_write(socket_, asio::buffer(sendPlayerMsgBuff),
 			boost::bind(&tcp_connection::playerMsgHandler, shared_from_this(),
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));
@@ -94,6 +93,8 @@ public:
 	}
 private:
 	asio::streambuf sbuf;
+	string sendMsgBuff;
+	string sendPlayerMsgBuff;
 	tcp::socket socket_;
 	std::string message_;
 	tcp_connection(asio::io_service& io_service)
@@ -147,8 +148,6 @@ public:
 		clients(std::move(clients)),timer_(io, gap),currentFrame(currentFrame) {}
 
 	int start();
-
-
 	boost::posix_time::seconds gap = boost::posix_time::seconds(1);
 
 private:
@@ -184,14 +183,15 @@ void Scheduler::scheduleSend(const asio::error_code& err)
 			}
 		}catch(...)
 		{
-			
+			cerr << "Scheduler::scheduleSend error" << std::endl;
 		}
 		a->lock.unlock();
 	}
-	for(auto &a:clients)
+	if(!res.empty())	for (auto &a : clients)
 	{
 		a->send(res);
 	}
+	currentFrame++;
 	timer_.expires_at(timer_.expires_at() + gap);
 	timer_.async_wait(boost::bind(&Scheduler::scheduleSend, this, asio::placeholders::error));
 }
@@ -231,8 +231,10 @@ private:
 	{
 		if (!error)
 		{
+			
 			new_connection->id = curClientsNumb;
 			new_connection->groupId = connectionsSeed;
+			//发出地图信息
 			new_connection->start(
 			{
 					{ Constant::GameMsg::selfId,to_string(new_connection->id) },
@@ -273,13 +275,14 @@ private:
 
 			totalData.push_back(Tool::serial_map(but));
 		}
-		totalData.push_back(Tool::serial_map({ Constant::GameMsg::randomSeed ,to_string(engine())}));
-		totalData.push_back(Tool::serial_map( { Constant::GameMsg::isFinishInitMsg,Constant::bool_true }));
+		totalData.push_back(Tool::serial_map({ { Constant::GameMsg::randomSeed ,to_string(engine())} }));
+		totalData.push_back(Tool::serial_map({ {Constant::GameMsg::isFinishInitMsg,Constant::bool_true } }));
 		shared_ptr<Scheduler> scheduler = make_shared<Scheduler>(connections[xgroup],io,0);
+		//发出每个客户端各自的信息
 		for (auto &conn : connections[xgroup])
 		{
 			conn->scheduler = scheduler;
-			conn->playerMsg(totalData);
+			conn->sendPlayerMsg(totalData);
 		}
 		scheduler->start();
 	}
@@ -287,7 +290,6 @@ private:
 
 	std::default_random_engine engine = std::default_random_engine(2222);
 	int connectionsSeed = 0;
-	//FIXME：这种数据结构不适合并行呀
 	map<int,vector<tcp_connection::pointer>> connections;
 	io_service &io;
 	tcp::acceptor acceptor_;
