@@ -22,7 +22,8 @@ public:
 	static string serial_map(const std::map<string, string> &keyval);
 	//这里是反序列化一个user内的所有item
 	static std::map<string, string> deserial_item_map(const string &s);
-
+	//新添加了换行符返回true，没能添加返回false
+	static bool newlineEnd(string &s);
 };
 
 

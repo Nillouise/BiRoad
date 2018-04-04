@@ -34,5 +34,6 @@ namespace Constant
 		const string timeStamp = "timeStamp";
 		const string press_key = Constant::press_key;
 		const string isFinishInitMsg = "init message";
+		const string frameFinish = "frame finish";
 	}
 }

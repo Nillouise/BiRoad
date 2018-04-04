@@ -6,8 +6,16 @@
 #include <vector>
 #include "Game.h"
 #include "Server.h"
+#include <thread>
 
 Game *g_game;
+
+void server(int port,int groupSize)
+{
+	Server server(port, groupSize);
+	server.init(100, 100, 5);
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -29,8 +37,8 @@ int main(int argc, char* argv[])
 //	}
 //	game.clean();
 
-	Server server(4444,1);
-	server.init(100,100,5);
+	std::thread t1(server, 4444, 1);
+	t1.join();
 
 	return 0;
 }

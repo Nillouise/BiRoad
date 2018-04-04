@@ -165,3 +165,16 @@ map<string, string> Tool::deserial_item_map(const string &s)
 	}
 	return res;
 }
+
+bool Tool::newlineEnd(string& s)
+{
+	if(!s.empty())
+	{
+		if(s.back()!='\n')
+		{
+			s += '\n';
+			return true;
+		}
+	}
+	return false;
+}

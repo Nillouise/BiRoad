@@ -41,6 +41,7 @@ bool Client::send()
 	try
 	{
 		sendData = sendMsg;
+		Tool::newlineEnd(sendData);
 		sendMsg = "";
 	}
 	catch (...)
@@ -69,7 +70,7 @@ bool Client::recv(const asio::error_code& err, size_t size)
 	recvMsgMutex.lock();
 	try
 	{
-		recvMsg += s;
+		recvMsg += s+'\n';
 	}catch(...)
 	{
 		std::cout << "client recv msg error" << std::endl;

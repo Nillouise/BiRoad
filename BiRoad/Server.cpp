@@ -18,6 +18,7 @@ using std::vector;
 using std::string;
 using std::map;
 using std::to_string;
+
 class Scheduler;
 
 class tcp_connection
@@ -43,6 +44,7 @@ public:
 	bool send(const string &sendMsg)
 	{
 		this->sendMsgBuff = sendMsg;
+		Tool::newlineEnd(sendMsgBuff);
 		asio::async_write(socket_, asio::buffer(this->sendMsgBuff),
 			boost::bind(&tcp_connection::handle_write, shared_from_this(),
 				asio::placeholders::error,
@@ -65,6 +67,7 @@ public:
 				asio::placeholders::bytes_transferred));
 
 		message_ = Tool::serial_map(initMsg);
+		Tool::newlineEnd(message_);
 		asio::async_write(socket_, asio::buffer(message_),
 			boost::bind(&tcp_connection::handle_write, shared_from_this(),
 				asio::placeholders::error,
@@ -74,11 +77,13 @@ public:
 
 	void sendPlayerMsg(vector<string> playerMsg)
 	{
+		sendPlayerMsgBuff = "";
 		for (auto &a:playerMsg)
 		{
 			sendPlayerMsgBuff = sendPlayerMsgBuff +a+'\n';
 		}
-
+		Tool::newlineEnd(sendPlayerMsgBuff);
+		std::cout << "sendPlayerMsgBuff: " << sendPlayerMsgBuff << std::endl;
 		asio::async_write(socket_, asio::buffer(sendPlayerMsgBuff),
 			boost::bind(&tcp_connection::playerMsgHandler, shared_from_this(),
 				asio::placeholders::error,
@@ -87,9 +92,10 @@ public:
 
 
 	void playerMsgHandler(const asio::error_code& /*error*/,
-		size_t /*bytes_transferred*/)
+		size_t bytes_transfer/*bytes_transferred*/)
 	{
 		isInitPlayerMsg = true;
+		std::cout << "bytes_transfer" << bytes_transfer << std::endl;
 	}
 private:
 	asio::streambuf sbuf;
@@ -187,7 +193,9 @@ void Scheduler::scheduleSend(const asio::error_code& err)
 		}
 		a->lock.unlock();
 	}
-	if(!res.empty())	for (auto &a : clients)
+	res += Tool::serial_map({ {Constant::GameMsg::frameFinish,"true"} });
+	Tool::newlineEnd(res);
+	for (auto &a : clients)
 	{
 		a->send(res);
 	}
