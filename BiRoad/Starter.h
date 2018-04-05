@@ -11,7 +11,7 @@ public:
 	int height;
 	bool fullScreen;
 	int pxSize;
-
+	int selfId;
 	int init();
 };
 

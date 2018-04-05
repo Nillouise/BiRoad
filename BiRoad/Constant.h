@@ -35,5 +35,8 @@ namespace Constant
 		const string press_key = Constant::press_key;
 		const string isFinishInitMsg = "init message";
 		const string frameFinish = "frame finish";
+		const string objType = "objType";
+		const string snake = "snake";
+		const string ball = "ball";
 	}
 }

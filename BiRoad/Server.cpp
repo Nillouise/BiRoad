@@ -73,14 +73,14 @@ public:
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));
 	}
-	
+
 
 	void sendPlayerMsg(vector<string> playerMsg)
 	{
 		sendPlayerMsgBuff = "";
-		for (auto &a:playerMsg)
+		for (auto &a : playerMsg)
 		{
-			sendPlayerMsgBuff = sendPlayerMsgBuff +a+'\n';
+			sendPlayerMsgBuff = sendPlayerMsgBuff + a + '\n';
 		}
 		Tool::newlineEnd(sendPlayerMsgBuff);
 		std::cout << "sendPlayerMsgBuff: " << sendPlayerMsgBuff << std::endl;
@@ -136,9 +136,10 @@ private:
 				boost::bind(&tcp_connection::handle_read, shared_from_this(),
 					asio::placeholders::error,
 					asio::placeholders::bytes_transferred));
-		}catch(...)
+		}
+		catch (...)
 		{
-			std::cerr <<"client tcp connection "<<id << " error" << std::endl;
+			std::cerr << "client tcp connection " << id << " error" << std::endl;
 			throw;
 		}
 		lock.unlock();
@@ -150,8 +151,8 @@ private:
 class Scheduler
 {
 public:
-	Scheduler(vector<tcp_connection::pointer> clients, asio::io_service& io,int currentFrame) :
-		clients(std::move(clients)),timer_(io, gap),currentFrame(currentFrame) {}
+	Scheduler(vector<tcp_connection::pointer> clients, asio::io_service& io, int currentFrame) :
+		clients(std::move(clients)), timer_(io, gap), currentFrame(currentFrame) {}
 
 	int start();
 	boost::posix_time::seconds gap = boost::posix_time::seconds(1);
@@ -172,22 +173,23 @@ int Scheduler::start()
 
 void Scheduler::scheduleSend(const asio::error_code& err)
 {
-	if(err)
+	if (err)
 	{
 		return;
 	}
 	string res;
 
-	for(auto &a:clients)
+	for (auto &a : clients)
 	{
 		a->lock.lock();
 		try
 		{
-			if(a->recv_map[Constant::GameMsg::timeStamp]==to_string(currentFrame))
+			if (a->recv_map[Constant::GameMsg::timeStamp] == to_string(currentFrame))
 			{
-				res+=Tool::serial_map(a->recv_map)+'\n';
+				res += Tool::serial_map(a->recv_map) + '\n';
 			}
-		}catch(...)
+		}
+		catch (...)
 		{
 			cerr << "Scheduler::scheduleSend error" << std::endl;
 		}
@@ -239,7 +241,7 @@ private:
 	{
 		if (!error)
 		{
-			
+
 			new_connection->id = curClientsNumb;
 			new_connection->groupId = connectionsSeed;
 			//发出地图信息
@@ -280,12 +282,17 @@ private:
 			but[Constant::GameMsg::snakeId] = to_string(a->id);
 			but[Constant::GameMsg::pointC] = to_string(a->initPoint.c);
 			but[Constant::GameMsg::pointR] = to_string(a->initPoint.r);
-
+			but[Constant::GameMsg::objType] = Constant::GameMsg::snakeType;
 			totalData.push_back(Tool::serial_map(but));
 		}
+		totalData.push_back(Tool::serial_map({
+			{ Constant::GameMsg::objType ,Constant::GameMsg::ballType },
+			{Constant::GameMsg::pointC,to_string(1)},
+			{Constant::GameMsg::pointR,to_string(5)}
+		}));
 		totalData.push_back(Tool::serial_map({ { Constant::GameMsg::randomSeed ,to_string(engine())} }));
 		totalData.push_back(Tool::serial_map({ {Constant::GameMsg::isFinishInitMsg,Constant::bool_true } }));
-		shared_ptr<Scheduler> scheduler = make_shared<Scheduler>(connections[xgroup],io,0);
+		shared_ptr<Scheduler> scheduler = make_shared<Scheduler>(connections[xgroup], io, 0);
 		//发出每个客户端各自的信息
 		for (auto &conn : connections[xgroup])
 		{
@@ -298,7 +305,7 @@ private:
 
 	std::default_random_engine engine = std::default_random_engine(2222);
 	int connectionsSeed = 0;
-	map<int,vector<tcp_connection::pointer>> connections;
+	map<int, vector<tcp_connection::pointer>> connections;
 	io_service &io;
 	tcp::acceptor acceptor_;
 	int targetClientsNumb = 0;

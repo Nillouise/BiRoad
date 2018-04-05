@@ -7,6 +7,8 @@
 #include "Eatable.h"
 #include "Position.h"
 #include <boost/date_time/microsec_time_clock.hpp>
+#include "Tool.h"
+#include "Constant.h"
 using std::cout;
 using std::shared_ptr;
 using std::make_shared;
@@ -58,25 +60,54 @@ void Game::update()
 	static bool startGame = false;
 	
 	//这里生成蛇和球。
-	if(!startGame)
+	if (!startGame)
 	{
-		startGame = true;
+		std::stringstream ss(Tool::theClient()->getRecvMsg(true));
+		string line;
+		while (ss >> line)
+		{
+			using namespace Constant::GameMsg;
+			std::map<string, string> m = Tool::deserial_item_map(line);
+			if(m.find(Constant::GameMsg::isFinishInitMsg)!=m.end())
+			{
+				startGame = true;
+			}else if(m.find(Constant::GameMsg::randomSeed)!=m.end())
+			{
+				Tool::clientRandomEngine.seed(std::stoi(m[Constant::GameMsg::randomSeed]));
+			}else if(m.find(Constant::GameMsg::objType)!=m.end()&&m[Constant::GameMsg::objType]==Constant::GameMsg::snakeType)
+			{
+				shared_ptr<Object> snake = make_shared<Object>();
+				shared_ptr<Snakable> snakable = std::make_shared<Snakable>();
+				snakable->body.push_front(Point(stoi(m[pointC]),stoi(m[pointR])));
+				snakable->id = stoi(m[snakeId]);
+				snake->attributes[typeid(Snakable).name()] = snakable;
+				snake->attributes[typeid(Obstacle).name()] = make_shared<Obstacle>();
+				world.objs.insert(snake);
+			}else if(m.find(Constant::GameMsg::objType)!=m.end()&&m[Constant::GameMsg::objType]==Constant::GameMsg::ballType)
+			{
+				shared_ptr<Object> ballType = make_shared<Object>();
+				ballType->attributes[typeid(Eatable).name()] = make_shared<Eatable>();
+				ballType->attributes[typeid(Position).name()] = make_shared<Position>(Point(stoi(m[pointC]), stoi(m[pointR])));
+				world.objs.insert(ballType);
+			}
+		}
 
-		world.self_id = 0;
-		world.current_frame_numb = 0;
 
-		shared_ptr<Object> snake = make_shared<Object>();
-		shared_ptr<Snakable> snakable = std::make_shared<Snakable>();
-		snakable->body.push_front(Point(10, 10));
-		snakable->id = 0;
-		snake->attributes[typeid(Snakable).name()] = snakable;
-		snake->attributes[typeid(Obstacle).name()] = make_shared<Obstacle>();
-		world.objs.insert(snake);
-
-		shared_ptr<Object> ball = make_shared<Object>();
-		ball->attributes[typeid(Eatable).name()] = make_shared<Eatable>();
-		ball->attributes[typeid(Position).name()] = make_shared<Position>(Point{ 7, 4 });
-		world.objs.insert(ball);
+//		world.self_id = 0;
+//		world.current_frame_numb = 0;
+//
+//		shared_ptr<Object> snakeType = make_shared<Object>();
+//		shared_ptr<Snakable> snakable = std::make_shared<Snakable>();
+//		snakable->body.push_front(Point(10, 10));
+//		snakable->id = 0;
+//		snakeType->attributes[typeid(Snakable).name()] = snakable;
+//		snakeType->attributes[typeid(Obstacle).name()] = make_shared<Obstacle>();
+//		world.objs.insert(snakeType);
+//
+//		shared_ptr<Object> ballType = make_shared<Object>();
+//		ballType->attributes[typeid(Eatable).name()] = make_shared<Eatable>();
+//		ballType->attributes[typeid(Position).name()] = make_shared<Position>(Point{ 7, 4 });
+//		world.objs.insert(ballType);
 	}
 
 	static long long preUpdateTime = 0;
