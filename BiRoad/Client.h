@@ -20,7 +20,7 @@ public:
 	Client(const string &ip, int port):
 		ioService(),ip(ip), port(port),socket(ioService) {}
 	void init();
-	bool send();
+	bool send(string msg);
 	bool recv(const asio::error_code& err, size_t size);
 	bool firstReceive(const asio::error_code& err, size_t size);
 
@@ -30,14 +30,12 @@ public:
 	bool isDown;
 	asio::io_service ioService;
 	asio::ip::tcp::socket socket;
-	std::mutex sendMsgMutex;
-	string getSendMsg(bool clear = false);
 	std::mutex recvMsgMutex;
 	string getRecvMsg(bool clear = false);
 	std::map<string, string> initData;
 private:
-	string sendMsg;
 	string recvMsg;
+	string sendDataBuff;
 	string ip;
 	int port;
 	asio::streambuf recvbuf;

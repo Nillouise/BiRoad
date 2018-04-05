@@ -34,22 +34,19 @@ void Client::init()
 }
 
 
-bool Client::send()
+bool Client::send(string msg)
 {
-	string sendData;
-	sendMsgMutex.lock();
 	try
 	{
-		sendData = sendMsg;
-		Tool::newlineEnd(sendData);
-		sendMsg = "";
+		sendDataBuff = std::move(msg);
+		Tool::newlineEnd(sendDataBuff);
 	}
 	catch (...)
 	{
 		std::cout << "client send msg error" << std::endl;
 	}
-	sendMsgMutex.unlock();
-	asio::async_write(socket, asio::buffer(sendData), boost::bind(&Client::handle_write, shared_from_this(),
+	//这里应该不需要异步写，因为client这里本来就是开了个新线程的。
+	asio::async_write(socket, asio::buffer(sendDataBuff), boost::bind(&Client::handle_write, shared_from_this(),
 		asio::placeholders::error, asio::placeholders::bytes_transferred));
 	return true;
 }
@@ -113,26 +110,6 @@ bool Client::firstReceive(const asio::error_code& err, size_t size)
 			asio::placeholders::error,
 			asio::placeholders::bytes_transferred));
 	return true;
-}
-
-
-string Client::getSendMsg(bool clear)
-{
-	string res;
-	sendMsgMutex.lock();
-	try
-	{
-		res = sendMsg;
-		if(clear)
-		{
-			sendMsg = "";
-		}
-	}
-	catch (...)
-	{
-	}
-	sendMsgMutex.unlock();
-	return res;
 }
 
 

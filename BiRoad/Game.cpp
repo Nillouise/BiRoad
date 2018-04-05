@@ -23,6 +23,7 @@ bool Game::init(Starter& starter)
 	m_bRunning = true; // everything inited successfully,start the main loop
 	world.height = starter.height / starter.pxSize;
 	world.width = starter.width / starter.pxSize;
+	world.self_id = starter.selfId;
 	this->starter = starter;
 
 	if(!initRender(starter))
@@ -59,7 +60,7 @@ void Game::update()
 {
 	static bool startGame = false;
 	
-	//这里生成蛇和球。
+	//这里利用client网络的信息生成蛇和球。
 	if (!startGame)
 	{
 		std::stringstream ss(Tool::theClient()->getRecvMsg(true));
@@ -91,8 +92,6 @@ void Game::update()
 				world.objs.insert(ballType);
 			}
 		}
-
-
 //		world.self_id = 0;
 //		world.current_frame_numb = 0;
 //
@@ -111,7 +110,7 @@ void Game::update()
 	}
 
 	static long long preUpdateTime = 0;
-	if(GetTickCount()/500 != preUpdateTime/500)
+	if(Tool::theClient()->getRecvMsg().find(Constant::GameMsg::isFrameFinish) != string().npos)
 	{
 		preUpdateTime = GetTickCount();
 		robot(world, world.self_id);
@@ -120,9 +119,8 @@ void Game::update()
 		eatable_system(world);
 		obstacle_system(world);
 		death_system(world);
+		world.current_frame_numb++;
 	}
-
-	world.current_frame_numb++;
 }
 
 void Game::render()

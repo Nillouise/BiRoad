@@ -195,7 +195,7 @@ void Scheduler::scheduleSend(const asio::error_code& err)
 		}
 		a->lock.unlock();
 	}
-	res += Tool::serial_map({ {Constant::GameMsg::frameFinish,"true"} });
+	res += Tool::serial_map({ {Constant::GameMsg::isFrameFinish,Constant::bool_true } });
 	Tool::newlineEnd(res);
 	for (auto &a : clients)
 	{

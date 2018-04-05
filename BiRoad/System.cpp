@@ -236,18 +236,18 @@ void input(World &world, const std::string &keyname)
 	send_message_mutex.lock();
 	try
 	{
-		auto dire = convertor[keyname];
 		if (auto obj = Tool::get_self_snake(world))
 		{
 			if (Snakable *snake = Tool::getAttr<Snakable>(*obj))
 			{
-				if (!Tool::isConverseDirect(snake->direction.direction, dire))
+				if (!Tool::isConverseDirect(snake->direction.direction, convertor[keyname]))
 				{
 					map<string, string> keyval;
 					keyval[Constant::current_frame_numb] = to_string(world.current_frame_numb);
 					keyval[Constant::press_key] = keyname;
 					keyval[Constant::self_id] = to_string(world.self_id);
-					send_message_buffer = Tool::serial_map(keyval);
+					Tool::theClient()->send(Tool::serial_map(keyval));
+//					send_message_buffer = Tool::serial_map(keyval);
 				}
 			}
 		}
@@ -367,7 +367,7 @@ void robot(World &world, int snakeId)
 					path.pop_back();
 //					for (auto en : { E::up, E::down,E::left,E::right })
 //					{
-//						Point np = Tool::nextDirectPoint(en, *snake->body.begin());
+//						Point np = Tool::nextDirectPoint(en, *snakeType->body.begin());
 //						cout << dist[np.r][np.c][en].lenToStart << endl;
 //					}
 					break;
@@ -459,26 +459,38 @@ void network_system(World& world)
 	send_message_mutex.lock();
 	try
 	{
-		string frameMsg = Tool::theClient()->getRecvMsg(true);
+		const string frameMsg = Tool::theClient()->getRecvMsg(true);
 		std::stringstream ss(frameMsg);
 		string tmp;
-		while(ss>>tmp)
+		while(getline(ss,tmp))
 		{
 			map<string, string> kv = Tool::deserial_item_map(tmp);
-			if (kv[Constant::self_id] == to_string(world.self_id))
+
+			if (auto p = Tool::get_snake(world,stoi(kv[Constant::GameMsg::snakeId])))
 			{
-				if (auto p = Tool::get_self_snake(world))
+				if (auto snake = Tool::getAttr<Snakable>(*p))
 				{
-					if (auto snake = Tool::getAttr<Snakable>(*p))
+					auto next_direction = convertor[kv[Constant::press_key]];
+					if (!Tool::isConverseDirect(next_direction, snake->direction))
 					{
-						auto next_direction = convertor[kv[Constant::press_key]];
-						if (!Tool::isConverseDirect(next_direction, snake->direction))
-						{
-							snake->next_direction = next_direction;
-						}
+						snake->next_direction = next_direction;
 					}
 				}
 			}
+//			if (kv[Constant::self_id] == to_string(world.self_id))
+//			{
+//				if (auto p = Tool::get_self_snake(world))
+//				{
+//					if (auto snake = Tool::getAttr<Snakable>(*p))
+//					{
+//						auto next_direction = convertor[kv[Constant::press_key]];
+//						if (!Tool::isConverseDirect(next_direction, snake->direction))
+//						{
+//							snake->next_direction = next_direction;
+//						}
+//					}
+//				}
+//			}
 		}
 
 	}
