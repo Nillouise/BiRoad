@@ -459,24 +459,28 @@ void network_system(World& world)
 	send_message_mutex.lock();
 	try
 	{
-		string tmp = send_message_buffer;
-		send_message_buffer = "";
-		map<string, string> kv = Tool::deserial_item_map(tmp);
-
-		if (kv[Constant::self_id] == to_string(world.self_id))
+		string frameMsg = Tool::theClient()->getRecvMsg(true);
+		std::stringstream ss(frameMsg);
+		string tmp;
+		while(ss>>tmp)
 		{
-			if (auto p = Tool::get_self_snake(world))
+			map<string, string> kv = Tool::deserial_item_map(tmp);
+			if (kv[Constant::self_id] == to_string(world.self_id))
 			{
-				if (auto snake = Tool::getAttr<Snakable>(*p))
+				if (auto p = Tool::get_self_snake(world))
 				{
-					auto next_direction = convertor[kv[Constant::press_key]];
-					if (!Tool::isConverseDirect(next_direction, snake->direction))
+					if (auto snake = Tool::getAttr<Snakable>(*p))
 					{
-						snake->next_direction = next_direction;
+						auto next_direction = convertor[kv[Constant::press_key]];
+						if (!Tool::isConverseDirect(next_direction, snake->direction))
+						{
+							snake->next_direction = next_direction;
+						}
 					}
 				}
 			}
 		}
+
 	}
 	catch (...)
 	{

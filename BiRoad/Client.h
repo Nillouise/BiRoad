@@ -31,9 +31,9 @@ public:
 	asio::io_service ioService;
 	asio::ip::tcp::socket socket;
 	std::mutex sendMsgMutex;
-	string getSendMsg();
+	string getSendMsg(bool clear = false);
 	std::mutex recvMsgMutex;
-	string getRecvMsg();
+	string getRecvMsg(bool clear = false);
 	std::map<string, string> initData;
 private:
 	string sendMsg;

@@ -108,23 +108,25 @@ bool Client::firstReceive(const asio::error_code& err, size_t size)
 		return true;
 	}
 
-
 	asio::async_read_until(socket, recvbuf, '\n',
 		boost::bind(&Client::firstReceive, shared_from_this(),
 			asio::placeholders::error,
 			asio::placeholders::bytes_transferred));
-
 	return true;
 }
 
 
-string Client::getSendMsg()
+string Client::getSendMsg(bool clear)
 {
 	string res;
 	sendMsgMutex.lock();
 	try
 	{
 		res = sendMsg;
+		if(clear)
+		{
+			sendMsg = "";
+		}
 	}
 	catch (...)
 	{
@@ -134,13 +136,17 @@ string Client::getSendMsg()
 }
 
 
-string Client::getRecvMsg()
+string Client::getRecvMsg(bool clear)
 {
 	string res;
 	recvMsgMutex.lock();
 	try
 	{
 		res = recvMsg;
+		if(clear)
+		{
+			recvMsg = "";
+		}
 	}catch(...)
 	{
 	}

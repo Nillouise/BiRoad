@@ -57,6 +57,7 @@ void Game::update()
 {
 	static bool startGame = false;
 	
+	//这里生成蛇和球。
 	if(!startGame)
 	{
 		startGame = true;

@@ -256,7 +256,7 @@ private:
 			curClientsNumb++;
 			if (connections[connectionsSeed].size() == targetClientsNumb)
 			{
-				startGameMsg(connectionsSeed);
+				sendStartGameMsg(connectionsSeed);
 				connectionsSeed++;
 			}
 		}
@@ -265,7 +265,7 @@ private:
 	}
 
 
-	void startGameMsg(int xgroup)
+	void sendStartGameMsg(int xgroup)
 	{
 		//这里设置每条connect的数据
 		for (auto &a : connections[xgroup])

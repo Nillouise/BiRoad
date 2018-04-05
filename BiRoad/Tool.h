@@ -4,7 +4,8 @@
 #include "Point.h"
 #include <random>
 #include"World.h"
-
+#include"Client.h"
+#include<random>
 class Tool
 {
 public:
@@ -24,6 +25,9 @@ public:
 	static std::map<string, string> deserial_item_map(const string &s);
 	//新添加了换行符返回true，没能添加返回false
 	static bool newlineEnd(string &s);
+	static shared_ptr<Client> theClient();
+	static void theClient(shared_ptr<Client> client);
+	static std::default_random_engine clientRandomEngine;
 };
 
 

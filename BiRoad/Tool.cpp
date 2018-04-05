@@ -23,16 +23,9 @@ std::vector<std::string> Tool::split(const std::string& s, const std::string& de
 
 Point Tool::getRandomBall(int height, int width)
 {
-	static bool init = false;
-	static std::mt19937 rng;
-	if (!init)
-	{
-		rng.seed(std::random_device()());
-		init = true;
-	}
 	std::uniform_int_distribution<std::mt19937::result_type> randomHeight(0+1, height);
 	std::uniform_int_distribution<std::mt19937::result_type> randomWidth(0+1, width);
-	return Point(randomHeight(rng), randomWidth(rng));
+	return Point(randomHeight(clientRandomEngine), randomWidth(clientRandomEngine));
 }
 
 
@@ -177,4 +170,21 @@ bool Tool::newlineEnd(string& s)
 		}
 	}
 	return false;
+}
+
+namespace
+{
+	shared_ptr<Client> client;
+	
+}
+
+
+shared_ptr<Client> Tool::theClient()
+{
+	return client;
+}
+
+void Tool::theClient(shared_ptr<Client> client)
+{
+	::client = client;
 }
