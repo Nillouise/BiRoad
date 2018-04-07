@@ -239,6 +239,7 @@ private:
 	void handle_accept(tcp_connection::pointer new_connection,
 		const asio::error_code& error)
 	{
+		std::cout << "server accept new connection" << std::endl;
 		if (!error)
 		{
 

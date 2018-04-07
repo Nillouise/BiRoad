@@ -17,12 +17,16 @@ class Client
 	: public boost::enable_shared_from_this<Client>
 {
 public:
-	Client(const string &ip, int port):
-		ioService(),ip(ip), port(port),socket(ioService) {}
+	typedef boost::shared_ptr<Client> pClient;
+	static pClient create(const string &ip, int port)
+	{
+		return pClient(new Client(ip,port));
+	}
+	Client() = delete;
 	void init();
 	bool send(string msg);
 	bool recv(const asio::error_code& err, size_t size);
-	bool firstReceive(const asio::error_code& err, size_t size);
+	void firstReceive(const asio::error_code& err, size_t size);
 
 	//刚开始的信息是否初始化完成
 	bool isInit;
@@ -43,4 +47,6 @@ private:
 	void handle_write(const asio::error_code& /*error*/,
 		size_t /*bytes_transferred*/)
 	{}
+	Client(const string &ip, int port) :
+		ioService(), ip(ip), port(port), socket(ioService) {}
 };

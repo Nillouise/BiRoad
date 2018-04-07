@@ -4,7 +4,7 @@
 #include "Position.h"
 #include "Constant.h"
 using std::map;
-
+std::default_random_engine Tool::clientRandomEngine;
 std::vector<std::string> Tool::split(const std::string& s, const std::string& delimiter)
 {
 	std::vector<std::string> res;
@@ -174,17 +174,17 @@ bool Tool::newlineEnd(string& s)
 
 namespace
 {
-	shared_ptr<Client> client;
+	Client::pClient client;
 	
 }
 
 
-shared_ptr<Client> Tool::theClient()
+Client::pClient Tool::theClient()
 {
 	return client;
 }
 
-void Tool::theClient(shared_ptr<Client> client)
+void Tool::theClient(Client::pClient client)
 {
 	::client = client;
 }

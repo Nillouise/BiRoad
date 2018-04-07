@@ -81,12 +81,12 @@ bool Client::recv(const asio::error_code& err, size_t size)
 }
 
 
-bool Client::firstReceive(const asio::error_code& err, size_t size)
+void Client::firstReceive(const asio::error_code& err, size_t size)
 {
 	if(err)
 	{
 		isDown = true;
-		return false;
+		return;
 	}
 
 	std::istream is(&recvbuf);
@@ -102,14 +102,14 @@ bool Client::firstReceive(const asio::error_code& err, size_t size)
 			boost::bind(&Client::recv, shared_from_this(),
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));
-		return true;
+		return;
 	}
 
 	asio::async_read_until(socket, recvbuf, '\n',
 		boost::bind(&Client::firstReceive, shared_from_this(),
 			asio::placeholders::error,
 			asio::placeholders::bytes_transferred));
-	return true;
+	return;
 }
 
 

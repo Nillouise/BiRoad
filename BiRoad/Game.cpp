@@ -1,5 +1,5 @@
 #include "Game.h"
-#include<iostream>
+#include <iostream>
 #include "TextureManager.h"
 #include "System.h"
 #include "Snakable.h"
@@ -60,7 +60,7 @@ void Game::update()
 {
 	static bool startGame = false;
 	
-	//这里利用client网络的信息生成蛇和球。
+	//这里利用client网络的信息生成蛇和球。这里只是在startgame的时候初始化信息
 	if (!startGame)
 	{
 		std::stringstream ss(Tool::theClient()->getRecvMsg(true));
@@ -113,13 +113,13 @@ void Game::update()
 	if(Tool::theClient()->getRecvMsg().find(Constant::GameMsg::isFrameFinish) != string().npos)
 	{
 		preUpdateTime = GetTickCount();
-		robot(world, world.self_id);
 		network_system(world);
 		snakable_system(world);
 		eatable_system(world);
 		obstacle_system(world);
 		death_system(world);
 		world.current_frame_numb++;
+		robot(world, world.self_id);
 	}
 }
 
