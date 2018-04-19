@@ -11,6 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <mutex>
+
 using std::string;
 
 class Client
@@ -43,10 +44,14 @@ private:
 	string ip;
 	int port;
 	asio::streambuf recvbuf;
-
+	asio::deadline_timer timer;
 	void handle_write(const asio::error_code& /*error*/,
 		size_t /*bytes_transferred*/)
 	{}
+	void timer_handler(const asio::error_code&);
+
 	Client(const string &ip, int port) :
-		ioService(), ip(ip), port(port), socket(ioService) {}
+		ioService(), ip(ip), port(port), socket(ioService),timer(ioService, boost::posix_time::seconds(5))
+	{
+	}
 };

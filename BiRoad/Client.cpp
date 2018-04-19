@@ -26,11 +26,12 @@ void Client::init()
 	//fixme:客户端connect到底应不应该用阻塞式？
 //	asio::connect(socket, endpoint);
 	socket.connect(endpoint);
-
+	timer.async_wait(boost::bind(&Client::timer_handler, this, asio::placeholders::error));
 	asio::async_read_until(socket, recvbuf, '\n',
 		boost::bind(&Client::firstReceive, shared_from_this(),
 			asio::placeholders::error,
 			asio::placeholders::bytes_transferred));
+//	ioService.run();
 }
 
 
@@ -72,6 +73,7 @@ bool Client::recv(const asio::error_code& err, size_t size)
 	{
 		std::cout << "client recv msg error" << std::endl;
 	}
+	std::cout << "client recv:" << recvMsg << std::endl;
 	recvMsgMutex.unlock();
 	asio::async_read_until(socket, recvbuf, '\n',
 		boost::bind(&Client::firstReceive, shared_from_this(),
@@ -103,13 +105,13 @@ void Client::firstReceive(const asio::error_code& err, size_t size)
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));
 		return;
+	}else
+	{
+		asio::async_read_until(socket, recvbuf, '\n',
+			boost::bind(&Client::firstReceive, shared_from_this(),
+				asio::placeholders::error,
+				asio::placeholders::bytes_transferred));
 	}
-
-	asio::async_read_until(socket, recvbuf, '\n',
-		boost::bind(&Client::firstReceive, shared_from_this(),
-			asio::placeholders::error,
-			asio::placeholders::bytes_transferred));
-	return;
 }
 
 
@@ -129,4 +131,11 @@ string Client::getRecvMsg(bool clear)
 	}
 	recvMsgMutex.unlock();
 	return res;
+}
+
+void Client::timer_handler(const asio::error_code&)
+{
+	std::cout << "tiemr " << time(0) << std::endl;
+	timer.expires_at(timer.expires_at() + boost::posix_time::seconds(5));
+	timer.async_wait(boost::bind(&Client::timer_handler, this, asio::placeholders::error));
 }

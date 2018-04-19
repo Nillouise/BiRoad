@@ -24,7 +24,6 @@ void client(const string &ip, int port)
 {
 	std::cout << "launch theClient" << std::endl;
 	Client::pClient ptr = Client::create(ip, port);
-
 	ptr->init();
 	Tool::theClient(ptr);
 	ptr->ioService.run();
@@ -33,13 +32,11 @@ void client(const string &ip, int port)
 
 int main(int argc, char* argv[])
 {
-		std::thread t1(server, 4444, 1);
-		Sleep(1000);
-//	Client c("127.0.0.1", 4444);
-	Client::pClient ptr = Client::create("127.0.0.1", 4444);
-	ptr->init();
+	std::thread t1(server, 4444, 1);
+	Sleep(1000);
+	std::thread t2(client, "127.0.0.1", 4444);
 	t1.join();
-
+	t2.join();
 	//	加了下面两句即可在/SUBSYSTEM:WINDOWS 的条件下用控制台输出
 //	AllocConsole();
 //	freopen("CONOUT$", "w", stdout);
