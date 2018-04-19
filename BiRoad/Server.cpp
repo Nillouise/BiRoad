@@ -128,9 +128,11 @@ private:
 			//sbuf.commit(size);
 			std::istream is(&sbuf);
 			std::string s;
-			std::getline(is, s);
-			recv_map = Tool::deserial_item_map(s);
-
+			while(std::getline(is,s))
+			{
+				auto m = Tool::deserial_item_map(s);
+				recv_map.insert(m.begin(), m.end());
+			}
 
 			asio::async_read_until(socket_, sbuf, '\n',
 				boost::bind(&tcp_connection::handle_read, shared_from_this(),

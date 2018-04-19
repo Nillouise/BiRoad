@@ -61,14 +61,15 @@ bool Client::recv(const asio::error_code& err, size_t size)
 		return false;
 	}
 
-	std::istream is(&recvbuf);
-	std::string s;
-	std::getline(is, s);
-
 	recvMsgMutex.lock();
 	try
 	{
-		recvMsg += s+'\n';
+		std::istream is(&recvbuf);
+		std::string s;
+		while(std::getline(is, s))
+		{
+			recvMsg += s+'\n';		
+		}
 	}catch(...)
 	{
 		std::cout << "client recv msg error" << std::endl;
@@ -93,11 +94,12 @@ void Client::firstReceive(const asio::error_code& err, size_t size)
 
 	std::istream is(&recvbuf);
 	std::string s;
-	std::getline(is, s);
-
-	map<string, string> kv = Tool::deserial_item_map(s);
-	initData.insert(kv.begin(), kv.end());
-	if(kv.find(Constant::GameMsg::isFinishConnectMsg)!=kv.end())
+	while( std::getline(is, s))
+	{
+		map<string, string> kv = Tool::deserial_item_map(s);
+		initData.insert(kv.begin(), kv.end());
+	}
+	if(initData.find(Constant::GameMsg::isFinishConnectMsg)!= initData.end())
 	{
 		isInit = true;
 		asio::async_read_until(socket, recvbuf, '\n',
