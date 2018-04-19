@@ -97,7 +97,7 @@ void Client::firstReceive(const asio::error_code& err, size_t size)
 
 	map<string, string> kv = Tool::deserial_item_map(s);
 	initData.insert(kv.begin(), kv.end());
-	if(kv.find(Constant::GameMsg::isFinishInitMsg)!=kv.end())
+	if(kv.find(Constant::GameMsg::isFinishConnectMsg)!=kv.end())
 	{
 		isInit = true;
 		asio::async_read_until(socket, recvbuf, '\n',

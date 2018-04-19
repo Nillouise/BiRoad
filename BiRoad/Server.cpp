@@ -251,7 +251,8 @@ private:
 					{ Constant::GameMsg::selfId,to_string(new_connection->id) },
 					{ Constant::GameMsg::width,to_string(width)},
 					{ Constant::GameMsg::height, to_string(height) },
-					{ Constant::GameMsg::pxWidth,to_string(pxWidth) }
+					{ Constant::GameMsg::pxWidth,to_string(pxWidth) },
+					{Constant::GameMsg::isFinishConnectMsg,Constant::bool_true}
 			}
 			);
 

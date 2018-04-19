@@ -33,6 +33,7 @@ namespace Constant
 		const string pointR = "pointR";
 		const string timeStamp = "timeStamp";
 		const string press_key = Constant::press_key;
+		const string isFinishConnectMsg = "FinishConnectMsg";
 		const string isFinishInitMsg = "init message";
 		const string isFrameFinish = "frame finish";
 		const string objType = "objType";
