@@ -65,7 +65,7 @@ void Game::update()
 	{
 		std::stringstream ss(Tool::theClient()->getRecvMsg(true));
 		string line;
-		while (ss >> line)
+		while (getline(ss,line))
 		{
 			using namespace Constant::GameMsg;
 			std::map<string, string> m = Tool::deserial_item_map(line);
