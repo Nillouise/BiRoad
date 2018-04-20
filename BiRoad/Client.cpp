@@ -94,7 +94,7 @@ void Client::firstReceive(const asio::error_code& err, size_t size)
 
 	std::istream is(&recvbuf);
 	std::string s;
-	while( std::getline(is, s))
+	while(std::getline(is, s))
 	{
 		map<string, string> kv = Tool::deserial_item_map(s);
 		initData.insert(kv.begin(), kv.end());

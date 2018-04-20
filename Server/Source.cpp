@@ -4,11 +4,7 @@
 #include <asio.hpp>
 #include <boost/bind/bind.hpp>
 #include <asio/ip/tcp.hpp>
-#include <asio/impl/write.hpp>
 #include <iostream>
-#include <boost/bind/bind.hpp>
-#include <asio.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 using asio::ip::tcp;
 

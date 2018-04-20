@@ -74,7 +74,9 @@ void Game::update()
 				startGame = true;
 			}else if(m.find(Constant::GameMsg::randomSeed)!=m.end())
 			{
-				Tool::clientRandomEngine.seed(std::stoi(m[Constant::GameMsg::randomSeed]));
+				string s = m[Constant::GameMsg::randomSeed];
+				long long seed = std::stoll(s);
+				Tool::clientRandomEngine.seed(seed);
 			}else if(m.find(Constant::GameMsg::objType)!=m.end()&&m[Constant::GameMsg::objType]==Constant::GameMsg::snakeType)
 			{
 				shared_ptr<Object> snake = make_shared<Object>();
