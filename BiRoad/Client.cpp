@@ -68,13 +68,13 @@ bool Client::recv(const asio::error_code& err, size_t size)
 		std::string s;
 		while(std::getline(is, s))
 		{
-			recvMsg += s+'\n';		
+			recvMsg.push_back(s);	
 		}
 	}catch(...)
 	{
 		std::cout << "client recv msg error" << std::endl;
 	}
-	std::cout << "client recv:" << recvMsg << std::endl;
+	std::cout << "client recv:" << recvMsg.back() << std::endl;
 	recvMsgMutex.unlock();
 	asio::async_read_until(socket, recvbuf, '\n',
 		boost::bind(&Client::firstReceive, shared_from_this(),
@@ -116,17 +116,60 @@ void Client::firstReceive(const asio::error_code& err, size_t size)
 	}
 }
 
+std::vector<string> Client::popFrameMsg(bool clear)
+{
+	std::vector<string> res;
+	recvMsgMutex.lock();
+	try
+	{
+		int isFinishedAFrame = 0;
+		for(string &a:recvMsg)
+		{
+			res.push_back(a);
+			if(a.find(Constant::GameMsg::isFrameFinish+"="+Constant::bool_true)!= std::string::npos)
+			{
+				isFinishedAFrame = 1;
+				break;
+			}
+		}
+		if(isFinishedAFrame)
+		{
+			while(!recvMsg.empty()&&clear)
+			{
+				if (recvMsg.front().find(Constant::GameMsg::isFrameFinish + "=" + Constant::bool_true) != std::string::npos)
+				{
+					recvMsg.pop_front();
+					break;
+				}else
+				{
+					recvMsg.pop_front();
+				}
+			}
+		}else
+		{
+			res = {};
+		}
+	}catch(...)
+	{
+	}
+	recvMsgMutex.unlock();
+	return res;
+}
 
-string Client::getRecvMsg(bool clear)
+
+string Client::getFrameMsg(bool clear)
 {
 	string res;
 	recvMsgMutex.lock();
 	try
 	{
-		res = recvMsg;
+		for(auto &a:recvMsg)
+		{
+			res += a + '\n';
+		}
 		if(clear)
 		{
-			recvMsg = "";
+			recvMsg.clear();
 		}
 	}catch(...)
 	{

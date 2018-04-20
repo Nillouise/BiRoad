@@ -131,7 +131,12 @@ private:
 			while(std::getline(is,s))
 			{
 				auto m = Tool::deserial_item_map(s);
-				recv_map.insert(m.begin(), m.end());
+				for(auto &a:m)
+				{
+					recv_map[a.first] = a.second;
+				}
+
+//				recv_map.insert(m.begin(), m.end());
 			}
 
 			asio::async_read_until(socket_, sbuf, '\n',
@@ -186,7 +191,7 @@ void Scheduler::scheduleSend(const asio::error_code& err)
 		a->lock.lock();
 		try
 		{
-			if (a->recv_map[Constant::GameMsg::timeStamp] == to_string(currentFrame))
+			if (a->recv_map[Constant::current_frame_numb] == to_string(currentFrame))
 			{
 				res += Tool::serial_map(a->recv_map) + '\n';
 			}

@@ -63,7 +63,7 @@ void Game::update()
 	//这里利用client网络的信息生成蛇和球。这里只是在startgame的时候初始化信息
 	if (!startGame)
 	{
-		std::stringstream ss(Tool::theClient()->getRecvMsg(true));
+		std::stringstream ss(Tool::theClient()->getFrameMsg(true));
 		string line;
 		while (getline(ss,line))
 		{
@@ -112,7 +112,7 @@ void Game::update()
 	}
 
 	static long long preUpdateTime = 0;
-	if(Tool::theClient()->getRecvMsg().find(Constant::GameMsg::isFrameFinish) != string().npos)
+	if(!Tool::theClient()->popFrameMsg(false).empty())
 	{
 		preUpdateTime = GetTickCount();
 		network_system(world);

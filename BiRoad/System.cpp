@@ -263,7 +263,9 @@ void input(World &world,Direction::direction_enum dir)
 {
 	input(world, convertor2[dir]);
 }
+
 vector<Point> path;
+
 void robot(World &world, int snakeId)
 {
 	struct Star
@@ -459,21 +461,22 @@ void network_system(World& world)
 	send_message_mutex.lock();
 	try
 	{
-		const string frameMsg = Tool::theClient()->getRecvMsg(true);
-		std::stringstream ss(frameMsg);
-		string tmp;
-		while(getline(ss,tmp))
+		vector<string> frameMsg = Tool::theClient()->popFrameMsg(true);
+		for(auto tmp:frameMsg)
 		{
 			map<string, string> kv = Tool::deserial_item_map(tmp);
-
-			if (auto p = Tool::get_snake(world,stoi(kv[Constant::GameMsg::snakeId])))
+			auto e = kv.find(Constant::GameMsg::snakeId);
+			if(e!=kv.end())
 			{
-				if (auto snake = Tool::getAttr<Snakable>(*p))
+				if (auto p = Tool::get_snake(world, stoi(e->second)))
 				{
-					auto next_direction = convertor[kv[Constant::press_key]];
-					if (!Tool::isConverseDirect(next_direction, snake->direction))
+					if (auto snake = Tool::getAttr<Snakable>(*p))
 					{
-						snake->next_direction = next_direction;
+						auto next_direction = convertor[kv[Constant::press_key]];
+						if (!Tool::isConverseDirect(next_direction, snake->direction))
+						{
+							snake->next_direction = next_direction;
+						}
 					}
 				}
 			}

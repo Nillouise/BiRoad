@@ -46,6 +46,7 @@ int main(int argc, char* argv[])
 	starter.width = stoi(Tool::theClient()->initData[Constant::GameMsg::width]);
 	starter.height = stoi(Tool::theClient()->initData[Constant::GameMsg::height]);
 	starter.pxSize = stoi(Tool::theClient()->initData[Constant::GameMsg::pxWidth]);
+	starter.selfId = stoi(Tool::theClient()->initData[Constant::GameMsg::selfId]);
 
 	Game game;
 	g_game = &game;

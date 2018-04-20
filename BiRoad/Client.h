@@ -11,6 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <mutex>
+#include <deque>
 
 using std::string;
 
@@ -36,10 +37,11 @@ public:
 	asio::io_service ioService;
 	asio::ip::tcp::socket socket;
 	std::mutex recvMsgMutex;
-	string getRecvMsg(bool clear = false);
+	string getFrameMsg(bool clear = false);
+	std::vector<string> popFrameMsg(bool clear = false);
 	std::map<string, string> initData;
 private:
-	string recvMsg;
+	std::deque<string> recvMsg;
 	string sendDataBuff;
 	string ip;
 	int port;
