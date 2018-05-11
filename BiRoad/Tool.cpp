@@ -188,3 +188,11 @@ void Tool::theClient(Client::pClient client)
 {
 	::client = client;
 }
+
+bool Tool::packet(string s, NetworkMsg& msg)
+{
+	msg.body_length(s.size());
+	std::memcpy(msg.body(), s.c_str(), msg.body_length());
+	msg.encode_header();
+	return true;
+}

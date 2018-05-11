@@ -22,17 +22,20 @@ void Client::init()
 	isDown = false;
 
 //	tcp::resolver resolver(ioService);(
-	tcp::endpoint endpoint(asio::ip::address_v4::from_string(ip), port);
+//	tcp::endpoint endpoint(asio::ip::address_v4::from_string(ip), port);
+	tcp::resolver resolver(ioService);
+	auto endpoint_iterator = resolver.resolve({ ip, std::to_string(port) });
 	//fixme:客户端connect到底应不应该用阻塞式？
 //	asio::connect(socket, endpoint);)
 	//设置no delay	
 	socket.open(tcp::v4());
 	socket.set_option(tcp::no_delay(true));
-	socket.connect(endpoint);
-	asio::async_read_until(socket, recvbuf, '\n',
-		boost::bind(&Client::firstReceive, shared_from_this(),
-			asio::placeholders::error,
-			asio::placeholders::bytes_transferred));
+	do_connect(endpoint_iterator);
+//	socket.connect(endpoint);
+//	asio::async_read_until(socket, recvbuf, '\n',
+//		boost::bind(&Client::firstReceive, shared_from_this(),
+//			asio::placeholders::error,
+//			asio::placeholders::bytes_transferred));
 //	ioService.run();
 }
 

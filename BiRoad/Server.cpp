@@ -34,6 +34,7 @@ public:
 	Point initPoint;
 	bool isInitPlayerMsg = false;
 	std::mutex lock;
+	NetworkMsg write_msg;
 
 	static pointer create(asio::io_service& io_service)
 	{
@@ -46,10 +47,20 @@ public:
 		std::cout << "schedule send msg:" << sendMsg;
 		this->sendMsgBuff = sendMsg+"time stamp" + to_string(time(0)%10000);
 		Tool::newlineEnd(sendMsgBuff);
-		asio::async_write(socket_, asio::buffer(this->sendMsgBuff),
-			boost::bind(&tcp_connection::handle_write, shared_from_this(),
-				asio::placeholders::error,
-				asio::placeholders::bytes_transferred));
+//		asio::async_write(socket_, asio::buffer(this->sendMsgBuff),
+//			boost::bind(&tcp_connection::handle_write, shared_from_this(),
+//				asio::placeholders::error,
+//				asio::placeholders::bytes_transferred));
+		Tool::packet(sendMsgBuff, write_msg);
+		auto self(shared_from_this());
+		asio::async_write(socket_,
+			asio::buffer(write_msg.data(),
+				write_msg.length()),
+			[this, self](std::error_code ec, std::size_t /*length*/)
+		{
+		});
+
+
 		return true;
 	}
 
@@ -69,10 +80,18 @@ public:
 
 		message_ = Tool::serial_map(initMsg);
 		Tool::newlineEnd(message_);
-		asio::async_write(socket_, asio::buffer(message_),
-			boost::bind(&tcp_connection::handle_write, shared_from_this(),
-				asio::placeholders::error,
-				asio::placeholders::bytes_transferred));
+//		asio::async_write(socket_, asio::buffer(message_),
+//			boost::bind(&tcp_connection::handle_write, shared_from_this(),
+//				asio::placeholders::error,
+//				asio::placeholders::bytes_transferred));
+		Tool::packet(message_, write_msg);
+		auto self(shared_from_this());
+		asio::async_write(socket_,
+			asio::buffer(write_msg.data(),
+				write_msg.length()),
+			[this, self](std::error_code ec, std::size_t /*length*/)
+		{
+		});
 	}
 
 
@@ -85,10 +104,18 @@ public:
 		}
 		Tool::newlineEnd(sendPlayerMsgBuff);
 		std::cout << "sendPlayerMsgBuff: " << sendPlayerMsgBuff << std::endl;
-		asio::async_write(socket_, asio::buffer(sendPlayerMsgBuff),
-			boost::bind(&tcp_connection::playerMsgHandler, shared_from_this(),
-				asio::placeholders::error,
-				asio::placeholders::bytes_transferred));
+//		asio::async_write(socket_, asio::buffer(sendPlayerMsgBuff),
+//			boost::bind(&tcp_connection::playerMsgHandler, shared_from_this(),
+//				asio::placeholders::error,
+//				asio::placeholders::bytes_transferred));
+		Tool::packet(sendPlayerMsgBuff, write_msg);
+		auto self(shared_from_this());
+		asio::async_write(socket_,
+			asio::buffer(write_msg.data(),
+				write_msg.length()),
+			[this, self](std::error_code ec, std::size_t /*length*/)
+		{
+		});
 	}
 
 

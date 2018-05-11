@@ -164,6 +164,8 @@ xcopy "$(SolutionDir)SDL2_image\lib\x86\*.dll" "$(OutDir)" /y
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="asio.cpp" />
+    <ClCompile Include="chat_client.cpp" />
+    <ClCompile Include="chat_server.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Server.cpp" />
@@ -178,6 +180,7 @@ xcopy "$(SolutionDir)SDL2_image\lib\x86\*.dll" "$(OutDir)" /y
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="chat_message.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="Constant.h" />
     <ClInclude Include="Eatable.h" />
@@ -185,6 +188,7 @@ xcopy "$(SolutionDir)SDL2_image\lib\x86\*.dll" "$(OutDir)" /y
     <ClInclude Include="Game.h" />
     <ClInclude Include="LogicFrame.h" />
     <ClInclude Include="Network.h" />
+    <ClInclude Include="NetworkMsg.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Obstacle.h" />
     <ClInclude Include="Point.h" />

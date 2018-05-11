@@ -28,6 +28,7 @@ public:
 	static Client::pClient theClient();
 	static void theClient(Client::pClient client);
 	static std::default_random_engine clientRandomEngine;
+	static bool packet(string s, NetworkMsg &p);
 };
 
 
