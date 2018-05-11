@@ -3,12 +3,7 @@
 #include <asio/io_service.hpp>
 #include <asio/ip/tcp.hpp>
 #include <asio/streambuf.hpp>
-#include <asio/ip/tcp.hpp>
-#include <asio/impl/write.hpp>
-#include <iostream>
-#include <boost/bind/bind.hpp>
 #include <asio.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <mutex>
 #include <deque>
@@ -46,14 +41,13 @@ private:
 	string ip;
 	int port;
 	asio::streambuf recvbuf;
-	asio::deadline_timer timer;
 	void handle_write(const asio::error_code& /*error*/,
 		size_t /*bytes_transferred*/)
 	{}
 	void timer_handler(const asio::error_code&);
 
 	Client(const string &ip, int port) :
-		ioService(), ip(ip), port(port), socket(ioService),timer(ioService, boost::posix_time::seconds(5))
+		ioService(), ip(ip), port(port), socket(ioService)
 	{
 	}
 };

@@ -245,7 +245,7 @@ void input(World &world, const std::string &keyname)
 					map<string, string> keyval;
 					keyval[Constant::current_frame_numb] = to_string(world.current_frame_numb);
 					keyval[Constant::press_key] = keyname;
-					keyval[Constant::self_id] = to_string(world.self_id);
+						keyval[Constant::self_id] = to_string(world.self_id);
 					Tool::theClient()->send(Tool::serial_map(keyval));
 //					send_message_buffer = Tool::serial_map(keyval);
 				}

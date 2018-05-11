@@ -43,7 +43,8 @@ public:
 
 	bool send(const string &sendMsg)
 	{
-		this->sendMsgBuff = sendMsg;
+		std::cout << "schedule send msg:" << sendMsg;
+		this->sendMsgBuff = sendMsg+"10000000000000000000000000000000000000000000000000056546546";
 		Tool::newlineEnd(sendMsgBuff);
 		asio::async_write(socket_, asio::buffer(this->sendMsgBuff),
 			boost::bind(&tcp_connection::handle_write, shared_from_this(),
@@ -106,13 +107,15 @@ private:
 	tcp_connection(asio::io_service& io_service)
 		: socket_(io_service)
 	{
+		//设置no delay
+//		socket_.set_option(tcp::no_delay(true));
 	}
 
 
 	void handle_write(const asio::error_code& /*error*/,
-		size_t /*bytes_transferred*/)
+		size_t tb/*bytes_transferred*/)
 	{
-
+		std::cout << "schedule send msg finish:" << tb << std::endl;
 	}
 
 
@@ -162,7 +165,7 @@ public:
 		clients(std::move(clients)), timer_(io, gap), currentFrame(currentFrame) {}
 
 	int start();
-	boost::posix_time::seconds gap = boost::posix_time::seconds(1);
+	boost::posix_time::seconds gap = boost::posix_time::seconds(5);
 
 private:
 	vector<tcp_connection::pointer> clients;
@@ -174,6 +177,8 @@ private:
 
 int Scheduler::start()
 {
+	//这里的延迟是为了解决服务器启动的时候的帧同步问题
+	timer_.expires_from_now(boost::posix_time::seconds(3));
 	timer_.async_wait(boost::bind(&Scheduler::scheduleSend, this, asio::placeholders::error));
 	return 0;
 }
@@ -209,7 +214,8 @@ void Scheduler::scheduleSend(const asio::error_code& err)
 		a->send(res);
 	}
 	currentFrame++;
-	timer_.expires_at(timer_.expires_at() + gap);
+//	timer_.expires_at(timer_.expires_at() + gap);
+	timer_.expires_from_now(gap);
 	timer_.async_wait(boost::bind(&Scheduler::scheduleSend, this, asio::placeholders::error));
 }
 
@@ -249,7 +255,7 @@ private:
 		std::cout << "server accept new connection" << std::endl;
 		if (!error)
 		{
-
+			new_connection->socket().set_option(tcp::no_delay(true));
 			new_connection->id = curClientsNumb;
 			new_connection->groupId = connectionsSeed;
 			//发出地图信息

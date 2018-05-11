@@ -21,12 +21,14 @@ void Client::init()
 	isInit = false;
 	isDown = false;
 
-//	tcp::resolver resolver(ioService);
+//	tcp::resolver resolver(ioService);(
 	tcp::endpoint endpoint(asio::ip::address_v4::from_string(ip), port);
 	//fixme:客户端connect到底应不应该用阻塞式？
-//	asio::connect(socket, endpoint);
+//	asio::connect(socket, endpoint);)
+	//设置no delay
+	socket.open(tcp::v4());
+	socket.set_option(tcp::no_delay(true));
 	socket.connect(endpoint);
-	timer.async_wait(boost::bind(&Client::timer_handler, this, asio::placeholders::error));
 	asio::async_read_until(socket, recvbuf, '\n',
 		boost::bind(&Client::firstReceive, shared_from_this(),
 			asio::placeholders::error,
@@ -60,7 +62,7 @@ bool Client::recv(const asio::error_code& err, size_t size)
 		isDown = true;
 		return false;
 	}
-
+	std::cout<<"recv time \t:" << time(0) % 100000 <<"\t size: "<<size<< std::endl;
 	recvMsgMutex.lock();
 	try
 	{
@@ -178,9 +180,3 @@ string Client::getFrameMsg(bool clear)
 	return res;
 }
 
-void Client::timer_handler(const asio::error_code&)
-{
-	std::cout << "tiemr " << time(0) << std::endl;
-	timer.expires_at(timer.expires_at() + boost::posix_time::seconds(5));
-	timer.async_wait(boost::bind(&Client::timer_handler, this, asio::placeholders::error));
-}
