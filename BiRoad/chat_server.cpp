@@ -199,7 +199,7 @@ private:
 
 //----------------------------------------------------------------------
 
-int main(int argc, char* argv[])
+int fffmain(int argc, char* argv[])
 {
 	try
 	{
