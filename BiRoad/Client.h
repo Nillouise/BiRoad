@@ -9,6 +9,8 @@
 #include <deque>
 #include "NetworkMsg.h"
 #include <iostream>
+#include "Constant.h"
+#include <boost/bind/bind.hpp>
 
 using std::string;
 
@@ -38,6 +40,17 @@ public:
 	std::vector<string> popFrameMsg(bool clear = false);
 	std::map<string, string> initData;
 
+
+private:
+
+	std::deque<string> recvMsg;
+	string sendDataBuff;
+	string ip;
+	int port;
+	asio::streambuf recvbuf;
+	void handle_write(const asio::error_code& /*error*/,
+		size_t /*bytes_transferred*/)
+	{}
 	void write(const NetworkMsg& msg)
 	{
 		ioService.post(
@@ -56,16 +69,6 @@ public:
 	{
 		ioService.post([this]() { socket.close(); });
 	}
-private:
-	std::deque<string> recvMsg;
-	string sendDataBuff;
-	string ip;
-	int port;
-	asio::streambuf recvbuf;
-	void handle_write(const asio::error_code& /*error*/,
-		size_t /*bytes_transferred*/)
-	{}
-
 	void do_connect(asio::ip::tcp::resolver::iterator endpoint_iterator)
 	{
 		asio::async_connect(socket, endpoint_iterator,
@@ -77,6 +80,7 @@ private:
 			}
 		});
 	}
+
 
 	void do_read_header()
 	{
@@ -103,16 +107,58 @@ private:
 		{
 			if (!ec)
 			{
-				std::cout.write(read_msg_.body(), read_msg_.body_length());
-				std::cout << "\n";
+				if(!isInit)
+				{
+					//第一次被初始化
+					tackleFirstReceive();
+				}else
+				{
+					std::cout.write(read_msg_.body(), read_msg_.body_length());
+					std::cout << "\n";
+					tacklemsg(read_msg_);
+				}
+
 				do_read_header();
 			}
 			else
 			{
+				isDown = true;
 				socket.close();
 			}
 		});
 	}
+
+	void tacklemsg(NetworkMsg &msg)
+	{
+		recvMsgMutex.lock();
+		try
+		{
+			std::string s;
+			for(int i=0;i<(int)msg.body_length();i++)
+			{
+				if(msg.body()[i]=='\n')
+				{
+					recvMsg.push_back(s);
+					s = "";
+				}else
+				{
+					s += msg.body()[i];
+				}
+			}
+			if(!s.empty())
+			{
+				recvMsg.push_back(s);
+			}
+		}
+		catch (...)
+		{
+			std::cout << "client recv msg error" << std::endl;
+		}
+		std::cout << "client recv:" << recvMsg.back() << std::endl;
+		recvMsgMutex.unlock();
+	}
+
+	void tackleFirstReceive();
 
 	void do_write()
 	{

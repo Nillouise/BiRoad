@@ -12,6 +12,12 @@ public:
 	bool fullScreen;
 	int pxSize;
 	int selfId;
+	bool startServer;
+	string remoteServerIP;
+	int remoteServerPort;
+	bool robotStart;
+	int openPort;
+	int groupSize;
 	int init();
 };
 

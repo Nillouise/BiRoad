@@ -245,7 +245,7 @@ void input(World &world, const std::string &keyname)
 					map<string, string> keyval;
 					keyval[Constant::current_frame_numb] = to_string(world.current_frame_numb);
 					keyval[Constant::press_key] = keyname;
-						keyval[Constant::self_id] = to_string(world.self_id);
+						keyval[Constant::GameMsg::snakeId] = to_string(world.self_id);
 					Tool::theClient()->send(Tool::serial_map(keyval));
 //					send_message_buffer = Tool::serial_map(keyval);
 				}
@@ -307,6 +307,10 @@ void robot(World &world, int snakeId)
 			return shortPath;
 		}
 	};
+	if(!g_game->starter.robotStart)
+	{
+		return;
+	}
 	using E = Direction::direction_enum;
 	if (shared_ptr<Object> obj = Tool::get_snake(world, snakeId))
 	{
@@ -397,7 +401,6 @@ void robot(World &world, int snakeId)
 					}
 				}
 			}
-
 			cout << "robot press " << convertor2[resNextStep]<<endl;
 			input(world, resNextStep);
 		}

@@ -38,29 +38,33 @@ int main(int argc, char* argv[])
 
 	Starter starter;
 	starter.init();
-	//TODO： 这里应该判断一下是否启动server
-	std::thread t1(server, 4444, 1);
-	Sleep(3000);
-	std::thread t2(client, "192.168.1.104", 4444);
-//	while (!Tool::theClient()||!Tool::theClient()->isInit && !Tool::theClient()->isDown){};
-//	starter.width = stoi(Tool::theClient()->initData[Constant::GameMsg::width]);
-//	starter.height = stoi(Tool::theClient()->initData[Constant::GameMsg::height]);
-//	starter.pxSize = stoi(Tool::theClient()->initData[Constant::GameMsg::pxWidth]);
-//	starter.selfId = stoi(Tool::theClient()->initData[Constant::GameMsg::selfId]);
-//
-//	Game game;
-//	g_game = &game;
-//	game.init(starter);
-//
-//	while(game.running())
-//	{
-//		game.handleEvents();
-//		game.update();
-//		game.render();
-//	}
-//	game.clean();
+	//TODO： 这里应该判断一下是否启动server)
+	std::thread t1;
+	if(starter.startServer)
+	{
+		t1 =std::thread(server, starter.openPort, starter.groupSize);
+	}
 
-	t1.join();
+	Sleep(3000);
+	std::thread t2(client, starter.remoteServerIP, starter.remoteServerPort);
+	while (!Tool::theClient()||!Tool::theClient()->isInit && !Tool::theClient()->isDown){};
+	starter.width = stoi(Tool::theClient()->initData[Constant::GameMsg::width]);
+	starter.height = stoi(Tool::theClient()->initData[Constant::GameMsg::height]);
+	starter.pxSize = stoi(Tool::theClient()->initData[Constant::GameMsg::pxWidth]);
+	starter.selfId = stoi(Tool::theClient()->initData[Constant::GameMsg::selfId]);
+
+	Game game;
+	g_game = &game;
+	game.init(starter);
+
+	while(game.running())
+	{
+		game.handleEvents();
+		game.update();
+		game.render();
+	}
+	game.clean();
+
 
 	return 0;
 }

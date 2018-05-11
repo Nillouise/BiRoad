@@ -4,6 +4,17 @@
 #include <vector>
 #include "Tool.h"
 
+int stoint(string ori,int defaultval=0)
+{
+	try
+	{
+		return std::stoi(ori);
+	}catch(...)
+	{
+		return defaultval;
+	}
+}
+
 int Starter::init()
 {
 	std::ifstream file("setting.ini");
@@ -23,6 +34,13 @@ int Starter::init()
 			}
 			file.close();
 		}
+
+		startServer = bucket["isSetMyComputerToServer"] == "true";
+		remoteServerIP = bucket["remoteServerIP"];
+		remoteServerPort = stoint(bucket["remoteServerPort"]);
+		robotStart = bucket["robotStart"] == "true";
+		openPort = stoint(bucket["remoteServerPort"]);
+		groupSize = stoint(bucket["groupeSize"], 1);
 		title = "biroad";
 		xpos = 100;
 		ypos = 100;

@@ -45,7 +45,7 @@ public:
 	bool send(const string &sendMsg)
 	{
 		std::cout << "schedule send msg:" << sendMsg;
-		this->sendMsgBuff = sendMsg+"time stamp" + to_string(time(0)%10000);
+		this->sendMsgBuff = sendMsg;
 		Tool::newlineEnd(sendMsgBuff);
 //		asio::async_write(socket_, asio::buffer(this->sendMsgBuff),
 //			boost::bind(&tcp_connection::handle_write, shared_from_this(),
@@ -166,7 +166,6 @@ private:
 					recv_map[a.first] = a.second;
 				}
 
-//				recv_map.insert(m.begin(), m.end());
 			}
 
 			asio::async_read_until(socket_, sbuf, '\n',
@@ -192,7 +191,7 @@ public:
 		clients(std::move(clients)), timer_(io, gap), currentFrame(currentFrame) {}
 
 	int start();
-	boost::posix_time::seconds gap = boost::posix_time::seconds(5);
+	boost::posix_time::seconds gap = boost::posix_time::seconds(1);
 
 private:
 	vector<tcp_connection::pointer> clients;
@@ -314,7 +313,7 @@ private:
 		//这里设置每条connect的数据
 		for (auto &a : connections[xgroup])
 		{
-			a->initPoint = Point(a->id * 2 + 2, a->id * 2 + 2);
+			a->initPoint = Point(a->id * 5 + 2, a->id * 2 + 2);
 		}
 
 		vector<string> totalData;
@@ -329,7 +328,7 @@ private:
 		}
 		totalData.push_back(Tool::serial_map({
 			{ Constant::GameMsg::objType ,Constant::GameMsg::ballType },
-			{Constant::GameMsg::pointC,to_string(1)},
+			{Constant::GameMsg::pointC,to_string(5)},
 			{Constant::GameMsg::pointR,to_string(5)}
 		}));
 		totalData.push_back(Tool::serial_map({ { Constant::GameMsg::randomSeed ,to_string(engine())} }));

@@ -164,6 +164,31 @@ std::vector<string> Client::popFrameMsg(bool clear)
 	return res;
 }
 
+void Client::tackleFirstReceive()
+{
+	//第一次被初始化
+	string s;
+	for (int i = 0; i<read_msg_.body_length(); i++)
+	{
+		if (read_msg_.body()[i] == '\n')
+		{
+			std::map<string, string> kv = Tool::deserial_item_map(s);
+			initData.insert(kv.begin(), kv.end());
+			s = "";
+		}
+		else
+		{
+			s += read_msg_.body()[i];
+		}
+	}
+	if (!s.empty())
+	{
+		std::map<string, string> kv = Tool::deserial_item_map(s);
+		initData.insert(kv.begin(), kv.end());
+	}
+	isInit = true;
+}
+
 
 string Client::getFrameMsg(bool clear)
 {
