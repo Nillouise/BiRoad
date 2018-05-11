@@ -185,6 +185,7 @@ xcopy "$(SolutionDir)SDL2_image\lib\x86\*.dll" "$(OutDir)" /y
     <ClInclude Include="Game.h" />
     <ClInclude Include="LogicFrame.h" />
     <ClInclude Include="Network.h" />
+    <ClInclude Include="NetworkMsg.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Obstacle.h" />
     <ClInclude Include="Point.h" />

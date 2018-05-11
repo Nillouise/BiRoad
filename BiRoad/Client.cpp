@@ -28,11 +28,14 @@ void Client::init()
 	//设置no delay	
 	socket.open(tcp::v4());
 	socket.set_option(tcp::no_delay(true));
-	socket.connect(endpoint);
-	asio::async_read_until(socket, recvbuf, '\n',
-		boost::bind(&Client::firstReceive, shared_from_this(),
-			asio::placeholders::error,
-			asio::placeholders::bytes_transferred));
+	asio::async_connect(socket, endpoint,
+		boost::bind(&Client::handle_connect, shared_from_this(),
+			asio::placeholders::error)); //所有的操作都采用异步的方式  
+//	socket.connect(endpoint);
+//	asio::async_read(socket, recvbuf, '\n',
+//		boost::bind(&Client::firstReceive, shared_from_this(),
+//			asio::placeholders::error,
+//			asio::placeholders::bytes_transferred));
 //	ioService.run();
 }
 
@@ -80,7 +83,7 @@ bool Client::recv(const asio::error_code& err, size_t size)
 	}
 	std::cout << "client recv:" << recvMsg.back() << std::endl;
 	recvMsgMutex.unlock();
-	asio::async_read_until(socket, recvbuf, '\n',
+	asio::async_read(socket, recvbuf, '\n',
 		boost::bind(&Client::firstReceive, shared_from_this(),
 			asio::placeholders::error,
 			asio::placeholders::bytes_transferred));
@@ -106,14 +109,14 @@ void Client::firstReceive(const asio::error_code& err, size_t size)
 	if(initData.find(Constant::GameMsg::isFinishConnectMsg)!= initData.end())
 	{
 		isInit = true;
-		asio::async_read_until(socket, recvbuf, '\n',
+		asio::async_read(socket, recvbuf, '\n',
 			boost::bind(&Client::recv, shared_from_this(),
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));
 		return;
 	}else
 	{
-		asio::async_read_until(socket, recvbuf, '\n',
+		asio::async_read(socket, recvbuf, '\n',
 			boost::bind(&Client::firstReceive, shared_from_this(),
 				asio::placeholders::error,
 				asio::placeholders::bytes_transferred));

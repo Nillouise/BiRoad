@@ -13,7 +13,7 @@ std::vector<std::string> Tool::split(const std::string& s, const std::string& de
 	while (end != std::string::npos)
 	{
 		res.push_back(s.substr(start, end - start));
-		start = end + delimiter.length();
+		start = end + (int)delimiter.length();
 		end = s.find(delimiter, start);
 	}
 	res.push_back(s.substr(start, end));
