@@ -44,7 +44,7 @@ public:
 	bool send(const string &sendMsg)
 	{
 		std::cout << "schedule send msg:" << sendMsg;
-		this->sendMsgBuff = sendMsg+"10000000000000000000000000000000000000000000000000056546546";
+		this->sendMsgBuff = sendMsg+"time stamp" + to_string(time(0)%10000);
 		Tool::newlineEnd(sendMsgBuff);
 		asio::async_write(socket_, asio::buffer(this->sendMsgBuff),
 			boost::bind(&tcp_connection::handle_write, shared_from_this(),

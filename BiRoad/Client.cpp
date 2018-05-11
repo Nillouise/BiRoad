@@ -25,7 +25,7 @@ void Client::init()
 	tcp::endpoint endpoint(asio::ip::address_v4::from_string(ip), port);
 	//fixme:客户端connect到底应不应该用阻塞式？
 //	asio::connect(socket, endpoint);)
-	//设置no delay
+	//设置no delay	
 	socket.open(tcp::v4());
 	socket.set_option(tcp::no_delay(true));
 	socket.connect(endpoint);
@@ -57,20 +57,22 @@ bool Client::send(string msg)
 
 bool Client::recv(const asio::error_code& err, size_t size)
 {
+	std::cout << "recv time \t:" << time(0) % 100000 << "\t size: " << size << std::endl;
 	if (err)
 	{
 		isDown = true;
 		return false;
 	}
-	std::cout<<"recv time \t:" << time(0) % 100000 <<"\t size: "<<size<< std::endl;
 	recvMsgMutex.lock();
 	try
 	{
 		std::istream is(&recvbuf);
 		std::string s;
-		while(std::getline(is, s))
+		size_t len = 0;
+		while(std::getline(is, s)&&len<size)
 		{
-			recvMsg.push_back(s);	
+			recvMsg.push_back(s);
+			len += s.size()+1;
 		}
 	}catch(...)
 	{
@@ -117,6 +119,7 @@ void Client::firstReceive(const asio::error_code& err, size_t size)
 				asio::placeholders::bytes_transferred));
 	}
 }
+
 
 std::vector<string> Client::popFrameMsg(bool clear)
 {

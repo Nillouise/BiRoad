@@ -44,10 +44,8 @@ private:
 	void handle_write(const asio::error_code& /*error*/,
 		size_t /*bytes_transferred*/)
 	{}
-	void timer_handler(const asio::error_code&);
 
 	Client(const string &ip, int port) :
 		ioService(), ip(ip), port(port), socket(ioService)
-	{
-	}
+	{}
 };
