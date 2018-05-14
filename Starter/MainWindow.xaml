@@ -27,7 +27,7 @@
         <TextBlock x:Name="textBlock4" HorizontalAlignment="Left" Margin="299,159,0,0" TextWrapping="Wrap" Text="(auto set my computer to server)" VerticalAlignment="Top" Width="208"/>
         <Separator HorizontalAlignment="Left" Height="20" Margin="0,103,0,0" VerticalAlignment="Top" Width="517"/>
         <TextBox x:Name="groupeSize" HorizontalAlignment="Left" Height="23" Margin="387,210,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
-        <TextBlock x:Name="textblock5" HorizontalAlignment="Left" Margin="299,210,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="83" Height="19"/>
+        <TextBlock x:Name="textblock5" HorizontalAlignment="Left" Margin="299,210,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="83" Height="19"><Run Text="groupSize"/><LineBreak/><Run/></TextBlock>
 
     </Grid>
 </Window>
