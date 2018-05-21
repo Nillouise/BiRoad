@@ -59,7 +59,6 @@ void Game::handleEvents()
 void Game::update()
 {
 	static bool startGame = false;
-	
 	//这里利用client网络的信息生成蛇和球。这里只是在startgame的时候初始化信息
 	if (!startGame)
 	{
@@ -93,22 +92,7 @@ void Game::update()
 				ballType->attributes[typeid(Position).name()] = make_shared<Position>(Point(stoi(m[pointC]), stoi(m[pointR])));
 				world.objs.insert(ballType);
 			}
-		}
-//		world.self_id = 0;
-//		world.current_frame_numb = 0;
-//
-//		shared_ptr<Object> snakeType = make_shared<Object>();
-//		shared_ptr<Snakable> snakable = std::make_shared<Snakable>();
-//		snakable->body.push_front(Point(10, 10));
-//		snakable->id = 0;
-//		snakeType->attributes[typeid(Snakable).name()] = snakable;
-//		snakeType->attributes[typeid(Obstacle).name()] = make_shared<Obstacle>();
-//		world.objs.insert(snakeType);
-//
-//		shared_ptr<Object> ballType = make_shared<Object>();
-//		ballType->attributes[typeid(Eatable).name()] = make_shared<Eatable>();
-//		ballType->attributes[typeid(Position).name()] = make_shared<Position>(Point{ 7, 4 });
-//		world.objs.insert(ballType);
+		} 
 	}
 
 	static long long preUpdateTime = 0;

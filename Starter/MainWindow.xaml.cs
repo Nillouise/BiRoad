@@ -28,10 +28,8 @@ namespace Starter
         }
 
         private Dictionary<string, string> dict;
-
         private void initDataFromSettingFile()
         {
-
             dict = new Dictionary<string, string>();
             try
             {
@@ -43,7 +41,7 @@ namespace Starter
                     {
                         continue;
                     }
-                    else
+                    else 
                     {
                         dict[keyValue[0]] = keyValue[1];
                     }
@@ -52,7 +50,6 @@ namespace Starter
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                //                throw;
             }
         }
 

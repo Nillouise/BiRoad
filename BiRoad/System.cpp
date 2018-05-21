@@ -483,20 +483,7 @@ void network_system(World& world)
 					}
 				}
 			}
-//			if (kv[Constant::self_id] == to_string(world.self_id))
-//			{
-//				if (auto p = Tool::get_self_snake(world))
-//				{
-//					if (auto snake = Tool::getAttr<Snakable>(*p))
-//					{
-//						auto next_direction = convertor[kv[Constant::press_key]];
-//						if (!Tool::isConverseDirect(next_direction, snake->direction))
-//						{
-//							snake->next_direction = next_direction;
-//						}
-//					}
-//				}
-//			}
+
 		}
 
 	}
